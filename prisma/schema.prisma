@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
@@ -16,6 +15,7 @@ datasource db {
 model User {
   id       String  @id @default(cuid())
   name     String?
+  username String? @unique
   email    String  @unique
   role     Role    @default(USER)
   banned   Boolean @default(false)
@@ -94,7 +94,6 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
 
   @@unique([token])
   @@index([userId])
