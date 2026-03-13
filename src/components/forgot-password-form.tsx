@@ -1,0 +1,74 @@
+'use client';
+
+import { Button } from '@/src/components/ui/button';
+import { Input } from '@/src/components/ui/input';
+import { Label } from '@/src/components/ui/label';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { requestPasswordReset } from '@/src/lib/auth-client';
+import { useRouter } from 'next/navigation';
+
+const ForgotPasswordForm = () => {
+    const [isPending, setIsPending] = useState<boolean>(false);
+    const router = useRouter();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get('email') as string;
+        if (!email) {
+            toast.error('Please enter your email address');
+            return;
+        }
+        await requestPasswordReset(
+            {
+                email,
+                redirectTo: '/auth/reset-password',
+            },
+            {
+                onRequest: (ctx) => {
+                    setIsPending(true);
+                },
+                onSuccess: (ctx) => {
+                    setIsPending(false);
+                    toast.success(
+                        'Password reset email sent. Please check your inbox.',
+                    );
+                    router.push('/auth/forgot-password/success');
+                },
+                onResponse: (ctx) => {
+                    setIsPending(false);
+                },
+                onError: (ctx) => {
+                    // display the error message
+                    setIsPending(false);
+                    toast.error(
+                        ctx.error?.message ??
+                            'Failed to send password reset email. Please try again.',
+                    );
+                },
+            },
+        );
+    };
+    return (
+        <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Email */}
+            <div className="space-y-1">
+                <Label className="leading-5" htmlFor="userEmail">
+                    Email address
+                </Label>
+                <Input
+                    type="email"
+                    id="userEmail"
+                    placeholder="m@example.com"
+                    name="email"
+                />
+            </div>
+
+            <Button className="w-full" type="submit" disabled={isPending}>
+                Send Reset Link
+            </Button>
+        </form>
+    );
+};
+
+export default ForgotPasswordForm;
