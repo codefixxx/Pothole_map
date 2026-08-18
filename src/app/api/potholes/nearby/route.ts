@@ -1,8 +1,8 @@
 import { db } from '@/src/lib/db';
-import { apiHandler } from '@/src/lib/apiHandler';
+import { asyncHandler } from '@/src/lib/handlers/async-handler'; 
 import { AppError } from '@/src/lib/errors';
 
-export const GET = apiHandler(async (req: Request) => {
+export const GET = asyncHandler(async (req: Request) => {
     const { searchParams } = new URL(req.url);
 
     const lat = Number(searchParams.get('lat'));
