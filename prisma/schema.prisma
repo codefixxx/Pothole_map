@@ -7,70 +7,85 @@
 generator client {
   provider = "prisma-client-js"
 }
-
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
 }
+
 
 model User {
   id       String  @id @default(cuid())
   name     String?
   username String? @unique
   email    String  @unique
+
   role     Role    @default(USER)
   banned   Boolean @default(false)
 
+  // Admin responsibility area
+  adminCity String?
+
+  // Potholes reported by this user
   potholes Pothole[]
-  votes    Vote[]
-  comments Comment[]
+
+  // Potholes verified by this admin
+  verifiedPotholes Pothole[] @relation("VerifiedBy")
 
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
   emailVerified Boolean   @default(false)
   image         String?
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+
+  sessions Session[]
+  accounts Account[]
+
+  votes    Vote[]
+  comments Comment[]
 
   @@map("user")
 }
 
 model Pothole {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
+
   title       String
   description String
+
   latitude    Float
   longitude   Float
+
+  city        String?
+  state       String?
+  country     String? @default("India")
+
   imageUrl    String?
-  status      Status  @default(PENDING)
 
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
+  status      Status   @default(PENDING)
+  severity    Int      @default(3)
 
-  votes    Vote[]
-  comments Comment[]
+  // Verification tracking
+  verifiedAt    DateTime?
+  verifiedBy    User?     @relation("VerifiedBy", fields: [verifiedById], references: [id])
+  verifiedById  String?
 
-  createdAt DateTime @default(now())
-}
+  // Repair tracking
+  fixedAt     DateTime?
 
-model Vote {
-  id        String  @id @default(cuid())
-  pothole   Pothole @relation(fields: [potholeId], references: [id])
-  potholeId String
-  user      User    @relation(fields: [userId], references: [id])
-  userId    String
+  // Reporter
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
 
-  @@unique([potholeId, userId])
-}
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-model Comment {
-  id        String  @id @default(cuid())
-  text      String
-  pothole   Pothole @relation(fields: [potholeId], references: [id])
-  potholeId String
-  user      User    @relation(fields: [userId], references: [id])
-  userId    String
+  votes       Vote[]
+  comments    Comment[]
 
-  createdAt DateTime @default(now())
+  @@index([city])
+  @@index([state])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([createdAt])
 }
 
 enum Role {
@@ -81,8 +96,11 @@ enum Role {
 enum Status {
   PENDING
   VERIFIED
+  ONGOING
   FIXED
+  REJECTED
 }
+
 
 model Session {
   id        String   @id
@@ -131,3 +149,33 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model Vote {
+  id        String   @id @default(cuid())
+  potholeId String
+  pothole   Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([potholeId, userId])
+  @@index([potholeId])
+  @@index([userId])
+  @@map("vote")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  potholeId String
+  pothole   Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([potholeId])
+  @@index([userId])
+  @@map("comment")
+}
+

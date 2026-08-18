@@ -1,10 +1,10 @@
 import { db } from '@/src/lib/db';
 import { auth } from '@/src/lib/auth';
-import { apiHandler } from '@/src/lib/apiHandler';
+import { asyncHandler } from '@/src/lib/handlers/async-handler';
 import { AppError } from '@/src/lib/errors';
 import { headers } from 'next/headers';
 
-export const GET = apiHandler(
+export const GET = asyncHandler(
     async (req: Request, { params }: { params: { id: string } }) => {
         const pothole = await db.pothole.findUnique({
             where: { id: params.id },
@@ -25,7 +25,7 @@ export const GET = apiHandler(
     },
 );
 
-export const PATCH = apiHandler(
+export const PATCH = asyncHandler(
     async (req: Request, { params }: { params: { id: string } }) => {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session) {
@@ -62,7 +62,7 @@ export const PATCH = apiHandler(
     },
 );
 
-export const DELETE = apiHandler(
+export const DELETE = asyncHandler(
     async (req: Request, { params }: { params: { id: string } }) => {
         const session = await auth.api.getSession(req);
         if (!session) {

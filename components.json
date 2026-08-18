@@ -42,6 +42,8 @@
         "license_key": "${LICENSE_KEY}"
       }
     },
-    "@tailark": "https://tailark.com/r/{name}.json"
+    "@tailark": "https://tailark.com/r/{name}.json",
+    "@shadcnblocks": "https://shadcnblocks.com/r/{name}.json",
+    "@diceui": "https://diceui.com/r/{name}.json"
   }
 }
