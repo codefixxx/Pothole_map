@@ -1,5 +1,5 @@
 import { db } from './db';
-import { ForbiddenError, UnauthorizedError, NotFoundError } from './errors';
+import { ForbiddenError, NotFoundError } from './errors';
 
 /**
  * Fetches a user's municipality membership details.
