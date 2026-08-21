@@ -12,17 +12,6 @@ export async function getMunicipalityMember(userId: string) {
 }
 
 /**
- * Custom error helper for not found.
- * If NotFoundError is not defined in errors, we fallback to AppError with 404.
- */
-class LocalNotFoundError extends Error {
-    statusCode = 404;
-    constructor(message: string) {
-        super(message);
-    }
-}
-
-/**
  * Authorizes a user action on a specific report/pothole.
  * 
  * Rules:
@@ -48,7 +37,7 @@ export async function authorizeReportAction(
     });
 
     if (!pothole) {
-        throw new LocalNotFoundError('Pothole report not found');
+        throw new NotFoundError('Pothole report not found');
     }
 
     // 3. Deletion rule
