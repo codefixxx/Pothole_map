@@ -5,10 +5,13 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
+
 datasource db {
-  provider  = "postgresql"
+  provider   = "postgresql"
+  extensions = [postgis]
 }
 
 
@@ -41,6 +44,8 @@ model User {
 
   votes    Vote[]
   comments Comment[]
+
+  municipalityMember MunicipalityMember?
 
   @@map("user")
 }
@@ -75,6 +80,10 @@ model Pothole {
   user        User      @relation(fields: [userId], references: [id])
   userId      String
 
+  // Municipality routing
+  municipalityId String?
+  municipality   Municipality? @relation(fields: [municipalityId], references: [id], onDelete: SetNull)
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -86,6 +95,7 @@ model Pothole {
   @@index([status])
   @@index([latitude, longitude])
   @@index([createdAt])
+  @@index([municipalityId])
 }
 
 enum Role {
@@ -177,5 +187,51 @@ model Comment {
   @@index([potholeId])
   @@index([userId])
   @@map("comment")
+}
+
+
+model Municipality {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members      MunicipalityMember[]
+  jurisdiction Jurisdiction?
+  potholes     Pothole[]
+
+  @@map("municipality")
+}
+
+model Jurisdiction {
+  id             String       @id @default(cuid())
+  name           String
+  boundary       Unsupported("geometry(Polygon, 4326)")
+  municipalityId String       @unique
+  municipality   Municipality @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([boundary], name: "jurisdiction_boundary_idx", type: Gist)
+  @@map("jurisdiction")
+}
+
+model MunicipalityMember {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  municipalityId String
+  municipality   Municipality     @relation(fields: [municipalityId], references: [id], onDelete: Cascade)
+  role           MunicipalityRole
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([municipalityId])
+  @@map("municipality_member")
+}
+
+enum MunicipalityRole {
+  OFFICER
+  MANAGER
 }
 
