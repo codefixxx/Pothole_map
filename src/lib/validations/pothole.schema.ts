@@ -17,11 +17,20 @@ export const createPotholeSchema = z.object({
 
     longitude: z.number(),
 
+    locationAccuracy: z.number().optional().nullable(),
+    locationSource: z.enum(['GPS', 'MANUAL_ADJUSTMENT']).default('GPS'),
+    captureTimestamp: z.coerce.date().optional().nullable(),
+
     imageUrl: z.string().url().optional().nullable(),
+
+    image: z.object({
+        storageKey: z.string(),
+        metadata: z.record(z.string(), z.any()).optional().nullable(),
+    }).optional().nullable(),
 
     city: z.string().optional().nullable(),
     state: z.string().optional().nullable(),
-    country: z.string().optional().nullable().default("India"),
+    country: z.string().optional().nullable(),
 
     userId: z.string(),
 });

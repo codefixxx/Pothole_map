@@ -1,19 +1,12 @@
-import { db } from '@/src/lib/db';
 import { auth } from '@/src/lib/auth';
 import { asyncHandler } from '@/src/lib/handlers/async-handler';
 import { AppError } from '@/src/lib/errors';
 import { headers } from 'next/headers';
+import { createPotholeSchema } from '@/src/lib/validations/pothole.schema';
+import * as potholeService from '@/src/services/pothole.service';
 
 export const GET = asyncHandler(async () => {
-    const potholes = await db.pothole.findMany({
-        include: {
-            votes: true,
-            comments: true,
-        },
-        orderBy: {
-            createdAt: 'desc',
-        },
-    });
+    const potholes = await potholeService.getAllPotholes();
 
     return Response.json({
         success: true,
@@ -28,24 +21,23 @@ export const POST = asyncHandler(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { title, description, latitude, longitude } = body;
+    const validationResult = createPotholeSchema.safeParse({
+        ...body,
+        userId: session.user.id,
+    });
 
-    if (!title || !latitude || !longitude) {
-        throw new AppError('Missing required fields', 400);
+    if (!validationResult.success) {
+        throw new AppError(
+            validationResult.error.issues[0]?.message || 'Invalid input data',
+            400
+        );
     }
 
-    const pothole = await db.pothole.create({
-        data: {
-            title,
-            description,
-            latitude,
-            longitude,
-            userId: session.user.id,
-        },
-    });
+    const pothole = await potholeService.createPothole(validationResult.data);
 
     return Response.json({
         success: true,
         data: pothole,
     });
 });
+

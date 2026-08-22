@@ -29,8 +29,21 @@ import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 type PotholeStatus = 'PENDING' | 'ONGOING' | 'FIXED' | 'REJECTED';
 
 export async function create(data: CreatePotholeInput) {
+    const { image, ...rest } = data;
+
     return db.pothole.create({
-        data,
+        data: {
+            ...rest,
+            reportImage: image ? {
+                create: {
+                    storageKey: image.storageKey,
+                    metadata: image.metadata ?? undefined,
+                }
+            } : undefined
+        },
+        include: {
+            reportImage: true,
+        }
     });
 }
 
@@ -52,14 +65,10 @@ export async function findAll(
             createdAt: 'desc',
         },
 
-        select: {
-            id: true,
-            title: true,
-            severity: true,
-            status: true,
-            latitude: true,
-            longitude: true,
-            createdAt: true,
+        include: {
+            reportImage: true,
+            votes: true,
+            comments: true,
         },
     });
 }
@@ -68,6 +77,11 @@ export async function findById(id: string) {
     return db.pothole.findUnique({
         where: {
             id,
+        },
+        include: {
+            reportImage: true,
+            votes: true,
+            comments: true,
         },
     });
 }
@@ -194,14 +208,8 @@ export async function findPending(
             createdAt: 'desc',
         },
 
-        select: {
-            id: true,
-            title: true,
-            severity: true,
-            latitude: true,
-            longitude: true,
-            createdAt: true,
-            userId: true,
+        include: {
+            reportImage: true,
         },
     });
 }

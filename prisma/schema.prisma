@@ -59,11 +59,16 @@ model Pothole {
   latitude    Float
   longitude   Float
 
+  locationAccuracy Float?
+  locationSource   LocationSource @default(GPS)
+  captureTimestamp DateTime?
+
   city        String?
   state       String?
   country     String? @default("India")
 
   imageUrl    String?
+  reportImage ReportImage?
 
   status      Status   @default(PENDING)
   severity    Int      @default(3)
@@ -110,6 +115,32 @@ enum Status {
   FIXED
   REJECTED
 }
+
+enum LocationSource {
+  GPS
+  MANUAL_ADJUSTMENT
+}
+
+enum ImageProcessingState {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model ReportImage {
+  id              String   @id @default(cuid())
+  storageKey      String   @unique
+  metadata        Json?
+  processingState ImageProcessingState @default(PENDING)
+  potholeId       String   @unique
+  pothole         Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("report_image")
+}
+
 
 
 model Session {
