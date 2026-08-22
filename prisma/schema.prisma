@@ -133,8 +133,8 @@ model ReportImage {
   storageKey      String   @unique
   metadata        Json?
   processingState ImageProcessingState @default(PENDING)
-  potholeId       String   @unique
-  pothole         Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  potholeId       String?  @unique
+  pothole         Pothole? @relation(fields: [potholeId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

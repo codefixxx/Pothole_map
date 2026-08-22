@@ -31,20 +31,35 @@ type PotholeStatus = 'PENDING' | 'ONGOING' | 'FIXED' | 'REJECTED';
 export async function create(data: CreatePotholeInput) {
     const { image, ...rest } = data;
 
-    return db.pothole.create({
-        data: {
-            ...rest,
-            reportImage: image ? {
+    return db.$transaction(async (tx) => {
+        const pothole = await tx.pothole.create({
+            data: rest,
+        });
+
+        if (image) {
+            await tx.reportImage.upsert({
+                where: { storageKey: image.storageKey },
+                update: {
+                    potholeId: pothole.id,
+                    metadata: image.metadata ?? undefined,
+                },
                 create: {
                     storageKey: image.storageKey,
+                    potholeId: pothole.id,
                     metadata: image.metadata ?? undefined,
-                }
-            } : undefined
-        },
-        include: {
-            reportImage: true,
+                },
+            });
         }
-    });
+
+        return tx.pothole.findUnique({
+            where: { id: pothole.id },
+            include: {
+                reportImage: true,
+                votes: true,
+                comments: true,
+            },
+        });
+    }) as any; // Cast to bypass strict type inference variance in transaction wrapper
 }
 
 export async function findAll(
