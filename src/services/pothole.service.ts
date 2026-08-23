@@ -4,6 +4,7 @@ import { Status } from '@prisma/client';
 import { sendVerificationNotification, sendFixedNotification } from './notification.service';
 import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates } from '@/src/lib/auth-helpers';
+import { getOrCreateMunicipalityFromOSM } from './municipality.service';
 
 export async function createPothole(data: CreatePotholeInput) {
     if (data.latitude < -90 || data.latitude > 90) {
@@ -14,7 +15,17 @@ export async function createPothole(data: CreatePotholeInput) {
     }
 
     // Resolve containing jurisdiction using PostGIS ST_Contains
-    const municipalityId = await findJurisdictionForCoordinates(data.latitude, data.longitude);
+    let municipalityId = await findJurisdictionForCoordinates(data.latitude, data.longitude);
+
+    // Fallback: Resolve via OpenStreetMap Nominatim reverse geocoding if boundary not found locally
+    if (!municipalityId) {
+        try {
+            municipalityId = await getOrCreateMunicipalityFromOSM(data.latitude, data.longitude);
+        } catch (error) {
+            console.error('Failed to dynamically resolve jurisdiction from OSM:', error);
+            municipalityId = null;
+        }
+    }
 
     return potholeRepo.create({
         ...data,
