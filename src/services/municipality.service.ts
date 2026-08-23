@@ -4,6 +4,7 @@ import {
     CreateMunicipalityInput,
     CreateJurisdictionInput,
     CreateMunicipalityMemberInput,
+    UpdateMunicipalityMemberInput,
 } from '@/src/lib/validations/municipality.schema';
 import { AppError } from '@/src/lib/errors';
 
@@ -184,4 +185,70 @@ export async function getOrCreateMunicipalityFromOSM(latitude: number, longitude
         throw e;
     }
 }
+
+export async function getMunicipalityMembers(municipalityId?: string) {
+    return db.municipalityMember.findMany({
+        where: municipalityId ? { municipalityId } : {},
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    image: true,
+                },
+            },
+            municipality: true,
+        },
+    });
+}
+
+export async function updateMunicipalityMember(id: string, data: UpdateMunicipalityMemberInput) {
+    const existing = await db.municipalityMember.findUnique({
+        where: { id },
+    });
+    if (!existing) {
+        throw new AppError('Municipality member not found', 404);
+    }
+
+    if (data.municipalityId) {
+        const municipalityExists = await db.municipality.findUnique({
+            where: { id: data.municipalityId },
+        });
+        if (!municipalityExists) {
+            throw new AppError('Target municipality not found', 404);
+        }
+    }
+
+    return db.municipalityMember.update({
+        where: { id },
+        data,
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                },
+            },
+            municipality: true,
+        },
+    });
+}
+
+export async function removeMunicipalityMember(id: string) {
+    const existing = await db.municipalityMember.findUnique({
+        where: { id },
+    });
+    if (!existing) {
+        throw new AppError('Municipality member not found', 404);
+    }
+
+    return db.municipalityMember.delete({
+        where: { id },
+    });
+}
+
 

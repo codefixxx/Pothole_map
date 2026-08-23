@@ -24,3 +24,13 @@ export const createMunicipalityMemberSchema = z.object({
 export type CreateMunicipalityInput = z.infer<typeof createMunicipalitySchema>;
 export type CreateJurisdictionInput = z.infer<typeof createJurisdictionSchema>;
 export type CreateMunicipalityMemberInput = z.infer<typeof createMunicipalityMemberSchema>;
+
+export const updateMunicipalityMemberSchema = z.object({
+    role: z.enum(['OFFICER', 'MANAGER']).optional(),
+    municipalityId: z.string().optional(),
+}).refine((data) => data.role !== undefined || data.municipalityId !== undefined, {
+    message: 'At least one field (role or municipalityId) must be provided for update',
+});
+
+export type UpdateMunicipalityMemberInput = z.infer<typeof updateMunicipalityMemberSchema>;
+
