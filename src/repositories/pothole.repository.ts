@@ -28,10 +28,38 @@ import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 
 type PotholeStatus = 'PENDING' | 'ONGOING' | 'FIXED' | 'REJECTED';
 
-export async function create(data: CreatePotholeInput) {
-    return db.pothole.create({
-        data,
-    });
+export async function create(data: CreatePotholeInput & { municipalityId?: string | null }) {
+    const { image, ...rest } = data;
+
+    return db.$transaction(async (tx) => {
+        const pothole = await tx.pothole.create({
+            data: rest,
+        });
+
+        if (image) {
+            await tx.reportImage.upsert({
+                where: { storageKey: image.storageKey },
+                update: {
+                    potholeId: pothole.id,
+                    metadata: image.metadata ?? undefined,
+                },
+                create: {
+                    storageKey: image.storageKey,
+                    potholeId: pothole.id,
+                    metadata: image.metadata ?? undefined,
+                },
+            });
+        }
+
+        return tx.pothole.findUnique({
+            where: { id: pothole.id },
+            include: {
+                reportImage: true,
+                votes: true,
+                comments: true,
+            },
+        });
+    }) as any; // Cast to bypass strict type inference variance in transaction wrapper
 }
 
 export async function findAll(
@@ -52,14 +80,10 @@ export async function findAll(
             createdAt: 'desc',
         },
 
-        select: {
-            id: true,
-            title: true,
-            severity: true,
-            status: true,
-            latitude: true,
-            longitude: true,
-            createdAt: true,
+        include: {
+            reportImage: true,
+            votes: true,
+            comments: true,
         },
     });
 }
@@ -68,6 +92,11 @@ export async function findById(id: string) {
     return db.pothole.findUnique({
         where: {
             id,
+        },
+        include: {
+            reportImage: true,
+            votes: true,
+            comments: true,
         },
     });
 }
@@ -194,14 +223,8 @@ export async function findPending(
             createdAt: 'desc',
         },
 
-        select: {
-            id: true,
-            title: true,
-            severity: true,
-            latitude: true,
-            longitude: true,
-            createdAt: true,
-            userId: true,
+        include: {
+            reportImage: true,
         },
     });
 }

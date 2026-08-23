@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /app/lib/prisma
+
+# Antigravity agent configuration and rules
+.agents/
+GEMINI.md
+
