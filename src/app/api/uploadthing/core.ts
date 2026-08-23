@@ -27,7 +27,11 @@ export const ourFileRouter = {
       console.log("Avatar uploaded for userId:", metadata.userId);
       console.log("Avatar URL:", file.ufsUrl);
 
-      // TODO: update user.image in DB with file.ufsUrl
+      // Update user.image in DB with file.ufsUrl
+      await db.user.update({
+        where: { id: metadata.userId },
+        data: { image: file.ufsUrl },
+      });
 
       return { uploadedBy: metadata.userId, url: file.ufsUrl };
     }),
