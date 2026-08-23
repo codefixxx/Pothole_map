@@ -28,7 +28,7 @@ import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 
 type PotholeStatus = 'PENDING' | 'ONGOING' | 'FIXED' | 'REJECTED';
 
-export async function create(data: CreatePotholeInput) {
+export async function create(data: CreatePotholeInput & { municipalityId?: string | null }) {
     const { image, ...rest } = data;
 
     return db.$transaction(async (tx) => {

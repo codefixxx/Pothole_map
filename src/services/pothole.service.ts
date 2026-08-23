@@ -3,6 +3,7 @@ import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 import { Status } from '@prisma/client';
 import { sendVerificationNotification, sendFixedNotification } from './notification.service';
 import { AppError } from '../lib/errors';
+import { findJurisdictionForCoordinates } from '@/src/lib/auth-helpers';
 
 export async function createPothole(data: CreatePotholeInput) {
     if (data.latitude < -90 || data.latitude > 90) {
@@ -11,7 +12,14 @@ export async function createPothole(data: CreatePotholeInput) {
     if (data.longitude < -180 || data.longitude > 180) {
         throw new AppError('Invalid longitude coordinate', 400);
     }
-    return potholeRepo.create(data);
+
+    // Resolve containing jurisdiction using PostGIS ST_Contains
+    const municipalityId = await findJurisdictionForCoordinates(data.latitude, data.longitude);
+
+    return potholeRepo.create({
+        ...data,
+        municipalityId,
+    });
 }
 
 export async function getAllPotholes(page = 1, limit = 20) {
