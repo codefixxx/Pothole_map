@@ -31,3 +31,24 @@ export const POST = asyncHandler(async (req: Request) => {
         data: member,
     });
 });
+
+export const GET = asyncHandler(async (req: Request) => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) {
+        throw new AppError('Unauthorized', 401);
+    }
+    if (session.user.role !== 'ADMIN') {
+        throw new AppError('Forbidden', 403);
+    }
+
+    const { searchParams } = new URL(req.url);
+    const municipalityId = searchParams.get('municipalityId') || undefined;
+
+    const members = await municipalityService.getMunicipalityMembers(municipalityId);
+
+    return Response.json({
+        success: true,
+        data: members,
+    });
+});
+
