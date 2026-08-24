@@ -49,3 +49,26 @@ export async function findById(id: string) {
         updatedAt: row.updatedAt,
     };
 }
+
+export async function findByMunicipalityId(municipalityId: string) {
+    const results = await db.$queryRaw<any[]>`
+        SELECT "id", "name", ST_AsGeoJSON(boundary) as boundary, "municipalityId", "createdAt", "updatedAt"
+        FROM "jurisdiction"
+        WHERE "municipalityId" = ${municipalityId}
+        LIMIT 1;
+    `;
+
+    if (!results || results.length === 0) {
+        return null;
+    }
+
+    const row = results[0];
+    return {
+        id: row.id,
+        name: row.name,
+        boundary: JSON.parse(row.boundary).coordinates,
+        municipalityId: row.municipalityId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    };
+}

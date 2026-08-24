@@ -283,3 +283,13 @@ export async function assignPothole({
         return updatedPothole;
     });
 }
+
+export async function getMunicipalityDashboardQueue(params: {
+    municipalityId: string;
+    sortBy?: 'priority' | 'severity' | 'age';
+    status?: Status;
+    page?: number;
+    limit?: number;
+}) {
+    return potholeRepo.findDashboardQueue(params);
+}

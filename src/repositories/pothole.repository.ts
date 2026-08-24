@@ -282,3 +282,62 @@ function calculateDistance(
 function degreesToRadians(degrees: number) {
     return degrees * (Math.PI / 180);
 }
+
+export async function findDashboardQueue({
+    municipalityId,
+    sortBy = 'priority',
+    status,
+    page = 1,
+    limit = 20,
+}: {
+    municipalityId: string;
+    sortBy?: 'priority' | 'severity' | 'age';
+    status?: Status;
+    page?: number;
+    limit?: number;
+}) {
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const where: any = {
+        municipalityId,
+    };
+
+    if (status) {
+        where.status = status;
+    } else {
+        where.status = {
+            in: [Status.PENDING, Status.VERIFIED, Status.ONGOING],
+        };
+    }
+
+    let orderBy: any[] = [];
+    if (sortBy === 'severity') {
+        orderBy = [
+            { severity: 'desc' },
+            { createdAt: 'asc' },
+        ];
+    } else if (sortBy === 'age') {
+        orderBy = [
+            { createdAt: 'asc' },
+        ];
+    } else {
+        orderBy = [
+            { severity: 'desc' },
+            { votes: { _count: 'desc' } },
+            { createdAt: 'asc' },
+        ];
+    }
+
+    return db.pothole.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+        include: {
+            reportImage: true,
+            votes: true,
+            comments: true,
+        },
+    });
+}
