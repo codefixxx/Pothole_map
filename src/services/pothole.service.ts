@@ -88,3 +88,13 @@ export async function deletePothole(id: string, userId: string, userRole: string
 export async function scheduleMarkerRemoval() {
     return potholeRepo.removeExpiredFixedMarkers();
 }
+
+export async function getMunicipalityDashboardQueue(params: {
+    municipalityId: string;
+    sortBy?: 'priority' | 'severity' | 'age';
+    status?: Status;
+    page?: number;
+    limit?: number;
+}) {
+    return potholeRepo.findDashboardQueue(params);
+}
