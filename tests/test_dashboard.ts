@@ -198,7 +198,7 @@ async function main() {
     }
 
     console.log('  Queue Order:');
-    priorityQueue.forEach((p, idx) => console.log(`    ${idx + 1}. ${p.title} (Severity: ${p.severity}, Votes: ${p.votes.length}, Created: ${p.createdAt.toISOString()})`));
+    priorityQueue.forEach((p: any, idx) => console.log(`    ${idx + 1}. ${p.title} (Severity: ${p.severity}, Votes: ${p.votes.length}, Created: ${p.createdAt.toISOString()})`));
 
     if (priorityQueue[0].id === potholeA.id && priorityQueue[1].id === potholeC.id && priorityQueue[2].id === potholeB.id) {
         console.log('  [OK] Priority sort order correct (A -> C -> B)!\n');
@@ -217,7 +217,7 @@ async function main() {
     });
 
     console.log('  Queue Order:');
-    severityQueue.forEach((p, idx) => console.log(`    ${idx + 1}. ${p.title} (Severity: ${p.severity}, Created: ${p.createdAt.toISOString()})`));
+    severityQueue.forEach((p: any, idx) => console.log(`    ${idx + 1}. ${p.title} (Severity: ${p.severity}, Created: ${p.createdAt.toISOString()})`));
 
     if (severityQueue[0].id === potholeC.id && severityQueue[1].id === potholeA.id && severityQueue[2].id === potholeB.id) {
         console.log('  [OK] Severity sort order correct (C -> A -> B)!\n');
@@ -235,7 +235,7 @@ async function main() {
     });
 
     console.log('  Queue Order:');
-    ageQueue.forEach((p, idx) => console.log(`    ${idx + 1}. ${p.title} (Created: ${p.createdAt.toISOString()})`));
+    ageQueue.forEach((p: any, idx) => console.log(`    ${idx + 1}. ${p.title} (Created: ${p.createdAt.toISOString()})`));
 
     if (ageQueue[0].id === potholeC.id && ageQueue[1].id === potholeA.id && ageQueue[2].id === potholeB.id) {
         console.log('  [OK] Age sort order correct (C -> A -> B)!\n');
