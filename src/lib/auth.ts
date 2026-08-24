@@ -15,7 +15,7 @@ export const auth = betterAuth({
         enabled: true,
         minPasswordLength: 6,
         autoSignIn: false,
-        requireEmailVerification: true,
+        requireEmailVerification: false,
         resetPasswordTokenExpiresIn: 60 * 60,
         sendResetPassword: async ({ user, url }) => {
             void sendEmail({

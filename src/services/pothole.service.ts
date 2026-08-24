@@ -5,8 +5,19 @@ import { sendVerificationNotification, sendFixedNotification } from './notificat
 import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates } from '@/src/lib/auth-helpers';
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
+import { db } from '@/src/lib/db';
 
 export async function createPothole(data: CreatePotholeInput) {
+    const user = await db.user.findUnique({
+        where: { id: data.userId },
+    });
+    if (!user) {
+        throw new AppError('User not found', 404);
+    }
+    if (!user.emailVerified) {
+        throw new AppError('Please verify your email address to report potholes.', 403);
+    }
+
     if (data.latitude < -90 || data.latitude > 90) {
         throw new AppError('Invalid latitude coordinate', 400);
     }
