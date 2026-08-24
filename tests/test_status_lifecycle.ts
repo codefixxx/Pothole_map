@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { db } from './src/lib/db';
-import { createMunicipality, addMunicipalityMember } from './src/services/municipality.service';
-import { createPothole, transitionPotholeStatus } from './src/services/pothole.service';
+import { db } from '../src/lib/db';
+import { createMunicipality, addMunicipalityMember } from '../src/services/municipality.service';
+import { createPothole, transitionPotholeStatus } from '../src/services/pothole.service';
 import { MunicipalityRole, Status } from '@prisma/client';
 
 async function main() {
