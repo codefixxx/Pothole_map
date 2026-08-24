@@ -13,7 +13,7 @@ export const POST = asyncHandler(async (req: Request) => {
         throw new AppError('Forbidden', 403);
     }
 
-    const { potholeId, status } = await req.json();
+    const { potholeId, status, reason } = await req.json();
     if (!potholeId || !status) {
         throw new AppError('Missing potholeId or status in request body', 400);
     }
@@ -23,7 +23,7 @@ export const POST = asyncHandler(async (req: Request) => {
         throw new AppError('Invalid status', 400);
     }
 
-    const updated = await potholeService.updatePotholeStatus(potholeId, status);
+    const updated = await potholeService.updatePotholeStatus(potholeId, status, session.user.id, reason);
 
     return Response.json({
         success: true,

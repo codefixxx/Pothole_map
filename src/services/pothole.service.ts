@@ -6,6 +6,7 @@ import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates } from '@/src/lib/auth-helpers';
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
 import { db } from '@/src/lib/db';
+import { validateStatusTransition } from '@/src/lib/state-machine';
 
 export async function createPothole(data: CreatePotholeInput) {
     const user = await db.user.findUnique({
@@ -60,32 +61,127 @@ export async function findNearbyPotholes(lat: number, lng: number, radiusInKm = 
     return potholeRepo.findNearby(lat, lng, radiusInKm);
 }
 
-export async function updatePotholeStatus(id: string, status: 'PENDING' | 'ONGOING' | 'FIXED' | 'REJECTED') {
-    const pothole = await getPotholeById(id);
-    const updated = await potholeRepo.updateStatus(id, status);
-
-    if (status === 'FIXED') {
-        await potholeRepo.markFixed(id);
-        // Fire notification in the background
-        void sendFixedNotification(pothole.userId, pothole.id);
+export async function transitionPotholeStatus({
+    potholeId,
+    newStatus,
+    actorId,
+    reason,
+}: {
+    potholeId: string;
+    newStatus: Status;
+    actorId: string;
+    reason?: string;
+}) {
+    // 1. Fetch user (actor) details with municipal membership relation
+    const actor = await db.user.findUnique({
+        where: { id: actorId },
+        include: { municipalityMember: true },
+    });
+    if (!actor) {
+        throw new AppError('Actor not found', 404);
     }
 
-    return updated;
+    // 2. Fetch pothole details
+    const pothole = await db.pothole.findUnique({
+        where: { id: potholeId },
+    });
+    if (!pothole) {
+        throw new AppError('Pothole report not found', 404);
+    }
+
+    const oldStatus = pothole.status;
+
+    // 3. Enforce the state machine transition check
+    validateStatusTransition(newStatus, {
+        actorRole: actor.role as 'USER' | 'ADMIN',
+        actorMember: actor.municipalityMember
+            ? {
+                  municipalityId: actor.municipalityMember.municipalityId,
+                  role: actor.municipalityMember.role,
+              }
+            : null,
+        pothole: {
+            id: pothole.id,
+            status: pothole.status,
+            municipalityId: pothole.municipalityId,
+        },
+    });
+
+    // 4. Perform database updates and log history atomically in a transaction
+    return db.$transaction(async (tx) => {
+        const updateData: any = {
+            status: newStatus,
+        };
+
+        if (newStatus === Status.VERIFIED) {
+            updateData.verifiedById = actorId;
+            updateData.verifiedAt = new Date();
+        } else if (newStatus === Status.FIXED) {
+            updateData.fixedAt = new Date();
+        }
+
+        const updatedPothole = await tx.pothole.update({
+            where: { id: potholeId },
+            data: updateData,
+            include: {
+                reportImage: true,
+                votes: true,
+                comments: true,
+            },
+        });
+
+        // Insert immutable transition history record
+        await tx.reportStatusHistory.create({
+            data: {
+                potholeId,
+                actorId,
+                oldStatus,
+                newStatus,
+                reason: reason || null,
+            },
+        });
+
+        // Trigger side-effects (background notifications)
+        if (newStatus === Status.VERIFIED) {
+            void sendVerificationNotification(pothole.userId, potholeId);
+        } else if (newStatus === Status.FIXED) {
+            void sendFixedNotification(pothole.userId, potholeId);
+        }
+
+        return updatedPothole;
+    });
 }
 
-export async function verifyPothole(id: string, adminId: string) {
-    const pothole = await getPotholeById(id);
-    const updated = await potholeRepo.verify(id, adminId);
-    
-    // Notify the reporter
-    void sendVerificationNotification(pothole.userId, id);
-    
-    return updated;
+export async function updatePotholeStatus(
+    id: string,
+    status: Status,
+    actorId: string,
+    reason?: string
+) {
+    return transitionPotholeStatus({
+        potholeId: id,
+        newStatus: status,
+        actorId,
+        reason,
+    });
 }
 
-export async function rejectPothole(id: string) {
-    await getPotholeById(id);
-    return potholeRepo.updateStatus(id, Status.REJECTED);
+export async function verifyPothole(id: string, adminId: string, reason?: string) {
+    return transitionPotholeStatus({
+        potholeId: id,
+        newStatus: Status.VERIFIED,
+        actorId: adminId,
+        reason,
+    });
+}
+
+export async function rejectPothole(id: string, actorId: string, reason?: string) {
+    return transitionPotholeStatus({
+        potholeId: id,
+        newStatus: Status.REJECTED,
+        actorId,
+        reason,
+    });
 }
 
 export async function deletePothole(id: string, userId: string, userRole: string) {
