@@ -3,7 +3,7 @@ import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 import { Status } from '@prisma/client';
 import { sendVerificationNotification, sendFixedNotification } from './notification.service';
 import { AppError } from '../lib/errors';
-import { findJurisdictionForCoordinates } from '@/src/lib/auth-helpers';
+import { findJurisdictionForCoordinates, authorizeReportAction } from '@/src/lib/auth-helpers';
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
 import { db } from '@/src/lib/db';
 import { validateStatusTransition } from '@/src/lib/state-machine';
@@ -194,4 +194,92 @@ export async function deletePothole(id: string, userId: string, userRole: string
 
 export async function scheduleMarkerRemoval() {
     return potholeRepo.removeExpiredFixedMarkers();
+}
+
+export async function assignPothole({
+    potholeId,
+    officerId,
+    actorId,
+    actorRole,
+}: {
+    potholeId: string;
+    officerId: string;
+    actorId: string;
+    actorRole: 'USER' | 'ADMIN';
+}) {
+    // 1. Fetch pothole
+    const pothole = await db.pothole.findUnique({
+        where: { id: potholeId },
+    });
+    if (!pothole) {
+        throw new AppError('Pothole report not found', 404);
+    }
+
+    // 2. Fetch officer details and check if they belong to the same municipality
+    const officer = await db.user.findUnique({
+        where: { id: officerId },
+        include: { municipalityMember: true },
+    });
+    if (!officer) {
+        throw new AppError('Assigned officer user not found', 404);
+    }
+
+    if (!officer.municipalityMember) {
+        throw new AppError('Cannot assign report: The target user is not a municipality member.', 400);
+    }
+
+    if (pothole.municipalityId !== officer.municipalityMember.municipalityId) {
+        throw new AppError('Cannot assign report: The officer is not a member of the responsible municipality.', 400);
+    }
+
+    // 3. Enforce reassignment authorization check (Managers/Admins only)
+    await authorizeReportAction(actorId, actorRole, potholeId, 'assign');
+
+    const oldStatus = pothole.status;
+    let newStatus = oldStatus;
+
+    // Automatically transition PENDING or VERIFIED status to ONGOING when assigned
+    if (oldStatus === Status.PENDING || oldStatus === Status.VERIFIED) {
+        newStatus = Status.ONGOING;
+    }
+
+    // 4. Update database atomically inside a transaction
+    return db.$transaction(async (tx) => {
+        const updatedPothole = await tx.pothole.update({
+            where: { id: potholeId },
+            data: {
+                assignedOfficerId: officerId,
+                status: newStatus,
+            },
+            include: {
+                reportImage: true,
+                votes: true,
+                comments: true,
+            },
+        });
+
+        // Log to immutable ReportAssignment log
+        await tx.reportAssignment.create({
+            data: {
+                potholeId,
+                officerId,
+                assignedById: actorId,
+            },
+        });
+
+        // Log to status transition logs if status changed
+        if (newStatus !== oldStatus) {
+            await tx.reportStatusHistory.create({
+                data: {
+                    potholeId,
+                    actorId,
+                    oldStatus,
+                    newStatus,
+                    reason: 'Automated transition due to assignment.',
+                },
+            });
+        }
+
+        return updatedPothole;
+    });
 }
