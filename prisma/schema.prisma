@@ -46,6 +46,7 @@ model User {
   comments Comment[]
 
   municipalityMember MunicipalityMember?
+  statusHistories    ReportStatusHistory[]
 
   @@map("user")
 }
@@ -94,6 +95,7 @@ model Pothole {
 
   votes       Vote[]
   comments    Comment[]
+  statusHistories ReportStatusHistory[]
 
   @@index([city])
   @@index([state])
@@ -264,5 +266,19 @@ model MunicipalityMember {
 enum MunicipalityRole {
   OFFICER
   MANAGER
+}
+
+model ReportStatusHistory {
+  id        String   @id @default(cuid())
+  potholeId String
+  pothole   Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  oldStatus Status
+  newStatus Status
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@map("report_status_history")
 }
 

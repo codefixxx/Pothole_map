@@ -11,14 +11,11 @@ export const POST = asyncHandler(
             throw new AppError('Unauthorized', 401);
         }
 
-        const pothole = await potholeService.getPotholeById(params.id);
-
-        // Only owner or admin can mark fixed
-        if (pothole.userId !== session.user.id && session.user.role !== 'ADMIN') {
-            throw new AppError('Forbidden', 403);
-        }
-
-        const updated = await potholeService.updatePotholeStatus(params.id, 'FIXED');
+        const updated = await potholeService.updatePotholeStatus(
+            params.id,
+            'FIXED',
+            session.user.id
+        );
 
         return Response.json({
             success: true,

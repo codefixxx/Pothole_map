@@ -14,7 +14,13 @@ export const POST = asyncHandler(
             throw new AppError('Forbidden', 403);
         }
 
-        const updated = await potholeService.verifyPothole(params.id, session.user.id);
+        let reason: string | undefined = undefined;
+        try {
+            const body = await req.json();
+            reason = body.reason;
+        } catch {}
+
+        const updated = await potholeService.verifyPothole(params.id, session.user.id, reason);
 
         return Response.json({
             success: true,

@@ -13,12 +13,12 @@ export const POST = asyncHandler(async (req: Request) => {
         throw new AppError('Forbidden', 403);
     }
 
-    const { potholeId } = await req.json();
+    const { potholeId, reason } = await req.json();
     if (!potholeId) {
         throw new AppError('Missing potholeId in request body', 400);
     }
 
-    const updated = await potholeService.verifyPothole(potholeId, session.user.id);
+    const updated = await potholeService.verifyPothole(potholeId, session.user.id, reason);
 
     return Response.json({
         success: true,

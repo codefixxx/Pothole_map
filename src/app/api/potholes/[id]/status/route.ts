@@ -11,14 +11,7 @@ export const PATCH = asyncHandler(
             throw new AppError('Unauthorized', 401);
         }
 
-        const pothole = await potholeService.getPotholeById(params.id);
-
-        // Only owner or admin
-        if (pothole.userId !== session.user.id && session.user.role !== 'ADMIN') {
-            throw new AppError('Forbidden', 403);
-        }
-
-        const { status } = await req.json();
+        const { status, reason } = await req.json();
         if (!status) {
             throw new AppError('Missing status in request body', 400);
         }
@@ -28,7 +21,12 @@ export const PATCH = asyncHandler(
             throw new AppError('Invalid status', 400);
         }
 
-        const updated = await potholeService.updatePotholeStatus(params.id, status);
+        const updated = await potholeService.updatePotholeStatus(
+            params.id,
+            status,
+            session.user.id,
+            reason
+        );
 
         return Response.json({
             success: true,
