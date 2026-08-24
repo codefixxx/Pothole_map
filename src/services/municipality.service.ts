@@ -46,6 +46,10 @@ export async function addMunicipalityMember(data: CreateMunicipalityMemberInput)
         throw new AppError('User not found', 404);
     }
 
+    if (!user.emailVerified) {
+        throw new AppError('Cannot promote user. The user\'s email address is not verified.', 400);
+    }
+
     const municipality = await db.municipality.findUnique({
         where: { id: data.municipalityId },
     });
