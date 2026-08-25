@@ -103,6 +103,8 @@ model Pothole {
   votes       Vote[]
   comments    Comment[]
   statusHistories ReportStatusHistory[]
+  duplicates      DuplicateCandidate[] @relation("PotholeDuplicates")
+  isDuplicateOf   DuplicateCandidate[] @relation("DuplicateOf")
 
   @@index([city])
   @@index([state])
@@ -301,4 +303,28 @@ model ReportAssignment {
 
   @@map("report_assignment")
 }
+
+model DuplicateCandidate {
+  id              String          @id @default(cuid())
+  potholeId       String
+  pothole         Pothole         @relation("PotholeDuplicates", fields: [potholeId], references: [id], onDelete: Cascade)
+  duplicateId     String
+  duplicate       Pothole         @relation("DuplicateOf", fields: [duplicateId], references: [id], onDelete: Cascade)
+  confidenceScore Float
+  status          DuplicateStatus @default(POTENTIAL)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([potholeId, duplicateId])
+  @@index([potholeId])
+  @@index([duplicateId])
+  @@map("duplicate_candidate")
+}
+
+enum DuplicateStatus {
+  POTENTIAL
+  CONFIRMED
+  REJECTED
+}
+
 
