@@ -7,6 +7,7 @@ import { findJurisdictionForCoordinates, authorizeReportAction } from '@/src/lib
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
 import { db } from '@/src/lib/db';
 import { validateStatusTransition } from '@/src/lib/state-machine';
+import { enqueuePotholeProcessing } from '@/src/lib/queue';
 
 export async function createPothole(data: CreatePotholeInput) {
     const user = await db.user.findUnique({
@@ -39,10 +40,18 @@ export async function createPothole(data: CreatePotholeInput) {
         }
     }
 
-    return potholeRepo.create({
+    const newPothole = await potholeRepo.create({
         ...data,
         municipalityId,
     });
+
+    try {
+        await enqueuePotholeProcessing(newPothole.id, data.image?.storageKey);
+    } catch (error) {
+        console.error(`Failed to enqueue background processing for pothole ${newPothole.id}:`, error);
+    }
+
+    return newPothole;
 }
 
 export async function getAllPotholes(page = 1, limit = 20) {

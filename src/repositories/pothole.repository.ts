@@ -59,6 +59,8 @@ export async function create(data: CreatePotholeInput & { municipalityId?: strin
                 comments: true,
             },
         });
+    }, {
+        timeout: 15000
     }) as any; // Cast to bypass strict type inference variance in transaction wrapper
 }
 
