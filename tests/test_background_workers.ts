@@ -80,6 +80,9 @@ async function main() {
         boundary,
         municipalityId: municipality.id,
     });
+    if (!jurisdiction) {
+        throw new Error('FAILED: Mock jurisdiction was not created.');
+    }
     console.log(`- Jurisdiction boundary created: ${jurisdiction.id}\n`);
 
     // 3. Create First Pothole (Center)
@@ -120,8 +123,18 @@ async function main() {
     console.log('Step 5: Starting background worker dynamically to process enqueued jobs...');
     const { potholeWorker } = await import('../src/workers/pothole.worker');
     
-    console.log('Worker active. Waiting 4 seconds for processing...');
-    await delay(4000);
+    console.log('Worker active. Waiting for all jobs in queue to complete...');
+    const queue = getPotholeQueue();
+    let active = await queue.getActiveCount();
+    let waiting = await queue.getWaitingCount();
+    let attempts = 0;
+    while ((active > 0 || waiting > 0) && attempts < 30) {
+        await delay(500);
+        active = await queue.getActiveCount();
+        waiting = await queue.getWaitingCount();
+        attempts++;
+    }
+    console.log('All jobs processed. Proceeding to assertions.\n');
 
     // 6. Assertions
     console.log('Step 6: Verifying image optimization states in DB...');
