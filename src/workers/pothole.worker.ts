@@ -3,7 +3,7 @@ import { db } from '../lib/db';
 import { getRedisConnection } from '../lib/redis';
 import { POTHOLE_QUEUE_NAME } from '../lib/queue';
 import { linkDuplicateCandidates } from '../services/duplicate.service';
-import { notifyCityAdmin, notifyNearbyDrivers } from '../services/notification.service';
+import { notifyCityAdmin, notifyNearbyDrivers, notifyNewPotholeReport } from '../services/notification.service';
 import { ImageProcessingState } from '@prisma/client';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -66,6 +66,7 @@ export const potholeWorker = new Worker(
 
         // 4. Notification Triggers
         console.log(`[Worker] Triggering notifications for pothole ${potholeId}`);
+        await notifyNewPotholeReport(pothole.municipalityId, pothole.id, pothole.title);
         if (pothole.city) {
             await notifyCityAdmin(pothole.city, pothole.id);
         }

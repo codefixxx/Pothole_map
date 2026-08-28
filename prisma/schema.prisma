@@ -50,6 +50,7 @@ model User {
   assignedPotholes   Pothole[]             @relation("CurrentAssignment")
   assignmentsMade     ReportAssignment[]    @relation("AssignedBy")
   assignmentsReceived ReportAssignment[]    @relation("AssignedOfficer")
+  notifications       Notification[]
 
   @@map("user")
 }
@@ -85,6 +86,10 @@ model Pothole {
   // Repair tracking
   fixedAt     DateTime?
 
+  // Escalation tracking
+  escalated   Boolean   @default(false)
+  escalatedAt DateTime?
+
   // Reporter
   user        User      @relation(fields: [userId], references: [id])
   userId      String
@@ -112,6 +117,7 @@ model Pothole {
   @@index([latitude, longitude])
   @@index([createdAt])
   @@index([municipalityId])
+  @@index([escalated])
 }
 
 enum Role {
@@ -325,6 +331,22 @@ enum DuplicateStatus {
   POTENTIAL
   CONFIRMED
   REJECTED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([read])
+  @@map("notification")
 }
 
 
