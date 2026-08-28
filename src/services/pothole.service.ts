@@ -1,7 +1,7 @@
 import * as potholeRepo from '@/src/repositories/pothole.repository';
 import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 import { Status } from '@prisma/client';
-import { sendVerificationNotification, sendFixedNotification, sendRejectedNotification, sendOngoingNotification, notifyOfficerAssignment } from './notification.service';
+import { sendVerificationNotification, sendFixedNotification, sendRejectedNotification, sendOngoingNotification, notifyOfficerAssignment, notifyFollowersOfStatusChange } from './notification.service';
 import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates, authorizeReportAction } from '@/src/lib/auth-helpers';
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
@@ -166,6 +166,25 @@ export async function transitionPotholeStatus({
         void sendOngoingNotification(pothole.userId, potholeId);
     }
 
+    // Notify followers of status transition
+    const statusMessages: Record<Status, string> = {
+        [Status.VERIFIED]: 'The pothole report you follow has been verified.',
+        [Status.FIXED]: 'The pothole report you follow has been marked as fixed!',
+        [Status.REJECTED]: `The pothole report you follow has been rejected.${reason ? ` Reason: ${reason}` : ''}`,
+        [Status.ONGOING]: 'Work has started on the pothole report you follow.',
+        [Status.PENDING]: 'The pothole report you follow has been reopened.',
+    };
+    const titleMap: Record<Status, string> = {
+        [Status.VERIFIED]: 'Followed Pothole Verified',
+        [Status.FIXED]: 'Followed Pothole Fixed',
+        [Status.REJECTED]: 'Followed Pothole Rejected',
+        [Status.ONGOING]: 'Work Started on Followed Pothole',
+        [Status.PENDING]: 'Followed Pothole Reopened',
+    };
+    if (statusMessages[newStatus]) {
+        void notifyFollowersOfStatusChange(potholeId, titleMap[newStatus], statusMessages[newStatus]);
+    }
+
     return result;
 }
 
@@ -306,6 +325,7 @@ export async function assignPothole({
     void notifyOfficerAssignment(officerId, potholeId, pothole.title);
     if (newStatus !== oldStatus && newStatus === Status.ONGOING) {
         void sendOngoingNotification(pothole.userId, potholeId);
+        void notifyFollowersOfStatusChange(potholeId, 'Work Started on Followed Pothole', 'Work has started on the pothole report you follow.');
     }
 
     return result;
