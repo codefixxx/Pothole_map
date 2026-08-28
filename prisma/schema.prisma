@@ -51,6 +51,7 @@ model User {
   assignmentsMade     ReportAssignment[]    @relation("AssignedBy")
   assignmentsReceived ReportAssignment[]    @relation("AssignedOfficer")
   notifications       Notification[]
+  followedPotholes    ReportFollower[]
 
   @@map("user")
 }
@@ -108,6 +109,7 @@ model Pothole {
   votes       Vote[]
   comments    Comment[]
   statusHistories ReportStatusHistory[]
+  followers       ReportFollower[]
   duplicates      DuplicateCandidate[] @relation("PotholeDuplicates")
   isDuplicateOf   DuplicateCandidate[] @relation("DuplicateOf")
 
@@ -347,6 +349,20 @@ model Notification {
   @@index([userId])
   @@index([read])
   @@map("notification")
+}
+
+model ReportFollower {
+  id        String   @id @default(cuid())
+  potholeId String
+  pothole   Pothole  @relation(fields: [potholeId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([potholeId, userId])
+  @@index([potholeId])
+  @@index([userId])
+  @@map("report_follower")
 }
 
 

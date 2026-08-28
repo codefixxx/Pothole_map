@@ -190,3 +190,28 @@ export async function notifyNearbyDrivers(latitude: number, longitude: number, p
     // Stub or log for compatibility
     console.log(`Warning drivers near coordinates (${latitude}, ${longitude}) regarding pothole ${potholeId}`);
 }
+
+export async function notifyFollowersOfStatusChange(potholeId: string, title: string, message: string) {
+    const appUrl = process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000';
+    const link = `${appUrl}/dashboard`;
+
+    // Fetch all followers
+    const followers = await db.reportFollower.findMany({
+        where: { potholeId },
+        include: { user: true },
+    });
+
+    for (const follower of followers) {
+        if (follower.user.email) {
+            await createNotification({ userId: follower.userId, title, message, link });
+            void sendEmail({
+                to: follower.user.email,
+                subject: title,
+                meta: {
+                    description: message,
+                    link,
+                },
+            });
+        }
+    }
+}
