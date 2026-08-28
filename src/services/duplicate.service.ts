@@ -92,6 +92,7 @@ export async function findDuplicatesForExistingPothole(
 
 /**
  * Finds and inserts potential duplicates into the database.
+ * Incorporates pgvector image similarity checks if an image embedding is available.
  */
 export async function linkDuplicateCandidates(
     potholeId: string,
@@ -106,12 +107,72 @@ export async function linkDuplicateCandidates(
         throw new AppError('Pothole not found', 404);
     }
 
-    const duplicates = await detectNearbyDuplicates(
-        pothole.latitude,
-        pothole.longitude,
-        radiusInMeters,
-        potholeId
-    );
+    // 1. Fetch the pothole's image embedding via raw SQL
+    const imageRows = await db.$queryRaw<{ embedding: string | null }[]>`
+        SELECT embedding::text FROM "report_image" WHERE "potholeId" = ${potholeId} LIMIT 1;
+    `;
+    const embeddingText = imageRows[0]?.embedding;
+    
+    let embedding: number[] | null = null;
+    if (embeddingText) {
+        embedding = embeddingText.replace('[', '').replace(']', '').split(',').map(Number);
+    }
+
+    let duplicates: PotentialDuplicateWithScore[] = [];
+
+    if (embedding) {
+        // Run AI-based similarity check
+        const rawCandidates = await duplicateRepository.findDuplicatesByGeomAndEmbedding(
+            pothole.latitude,
+            pothole.longitude,
+            radiusInMeters,
+            embedding,
+            potholeId
+        );
+
+        duplicates = rawCandidates.map((candidate) => {
+            const distanceFactor = Math.max(0, 1.0 - (candidate.distanceInMeters / radiusInMeters));
+            
+            let statusFactor = 0.0;
+            switch (candidate.status) {
+                case Status.PENDING:
+                case Status.VERIFIED:
+                case Status.ONGOING:
+                    statusFactor = 1.0;
+                    break;
+                case Status.FIXED:
+                    statusFactor = 0.2;
+                    break;
+                case Status.REJECTED:
+                    statusFactor = 0.0;
+                    break;
+                default:
+                    statusFactor = 0.5;
+            }
+
+            let confidenceScore = 0.0;
+            if (candidate.visualSimilarity !== null) {
+                // Hybrid calculation: 30% distance weight, 70% visual similarity weight
+                confidenceScore = (0.3 * distanceFactor + 0.7 * candidate.visualSimilarity) * statusFactor;
+            } else {
+                // Fallback to distance only
+                confidenceScore = distanceFactor * statusFactor;
+            }
+
+            return {
+                ...candidate,
+                confidenceScore: Number(confidenceScore.toFixed(4)),
+            };
+        }).sort((a, b) => b.confidenceScore - a.confidenceScore);
+    } else {
+        // Fallback to standard proximity check
+        duplicates = await detectNearbyDuplicates(
+            pothole.latitude,
+            pothole.longitude,
+            radiusInMeters,
+            potholeId
+        );
+    }
 
     const savedCandidates: DuplicateCandidate[] = [];
 

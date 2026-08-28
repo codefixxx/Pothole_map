@@ -54,6 +54,60 @@ export async function findDuplicatesByGeom(
     `;
 }
 
+export interface PotentialDuplicateWithEmbeddingRaw extends PotentialDuplicateRaw {
+    visualSimilarity: number | null;
+}
+
+/**
+ * Uses PostGIS and pgvector to find potholes within a given radius,
+ * computing geodistance and cosine similarity to the query embedding.
+ */
+export async function findDuplicatesByGeomAndEmbedding(
+    latitude: number,
+    longitude: number,
+    radiusInMeters: number,
+    embedding: number[],
+    excludePotholeId?: string | null
+): Promise<PotentialDuplicateWithEmbeddingRaw[]> {
+    const excludeId = excludePotholeId ?? null;
+    const embeddingStr = `[${embedding.join(',')}]`;
+
+    return db.$queryRaw<PotentialDuplicateWithEmbeddingRaw[]>`
+        SELECT 
+            p.id,
+            p.title,
+            p.description,
+            p.latitude,
+            p.longitude,
+            p.status,
+            p."createdAt",
+            ST_Distance(
+                ST_SetSRID(ST_Point(p.longitude, p.latitude), 4326)::geography,
+                ST_SetSRID(ST_Point(${longitude}, ${latitude}), 4326)::geography
+            ) AS "distanceInMeters",
+            CASE 
+                WHEN ri.embedding IS NOT NULL THEN (1.0 - (ri.embedding <=> ${embeddingStr}::vector))
+                ELSE NULL
+            END AS "visualSimilarity"
+        FROM "Pothole" p
+        LEFT JOIN "report_image" ri ON p.id = ri."potholeId"
+        WHERE ST_DWithin(
+            ST_SetSRID(ST_Point(p.longitude, p.latitude), 4326)::geography,
+            ST_SetSRID(ST_Point(${longitude}, ${latitude}), 4326)::geography,
+            ${radiusInMeters}
+        )
+        AND (${excludeId}::text IS NULL OR p.id != ${excludeId})
+        ORDER BY 
+            CASE 
+                WHEN p.status IN ('PENDING', 'VERIFIED', 'ONGOING') THEN 0 
+                ELSE 1 
+            END ASC,
+            "distanceInMeters" ASC
+        LIMIT 10;
+    `;
+}
+
+
 /**
  * Creates or updates a DuplicateCandidate record.
  */

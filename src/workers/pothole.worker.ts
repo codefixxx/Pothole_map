@@ -3,6 +3,7 @@ import { db } from '../lib/db';
 import { getRedisConnection } from '../lib/redis';
 import { POTHOLE_QUEUE_NAME } from '../lib/queue';
 import { linkDuplicateCandidates } from '../services/duplicate.service';
+import { generateImageEmbedding } from '../services/embedding.service';
 import { notifyCityAdmin, notifyNearbyDrivers, notifyNewPotholeReport } from '../services/notification.service';
 import { ImageProcessingState } from '@prisma/client';
 
@@ -55,6 +56,19 @@ export const potholeWorker = new Worker(
                 },
             });
             console.log(`[Worker] Image optimization completed for: ${image.storageKey}`);
+
+            // Generate and save AI visual embedding
+            try {
+                console.log(`[Worker] Generating AI embedding for image: ${image.storageKey}`);
+                const embedding = await generateImageEmbedding(image.storageKey);
+                const embeddingStr = `[${embedding.join(',')}]`;
+                await db.$executeRawUnsafe(
+                    `UPDATE "report_image" SET "embedding" = '${embeddingStr}'::vector WHERE "id" = '${image.id}'`
+                );
+                console.log(`[Worker] Successfully stored AI embedding for image: ${image.storageKey}`);
+            } catch (embedError) {
+                console.error('[Worker] Failed to generate/store embedding:', embedError);
+            }
         } else {
             console.log(`[Worker] No image associated with pothole ${potholeId}. Skipping image optimization.`);
         }
