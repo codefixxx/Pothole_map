@@ -1,7 +1,7 @@
 import * as potholeRepo from '@/src/repositories/pothole.repository';
 import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 import { Status } from '@prisma/client';
-import { sendVerificationNotification, sendFixedNotification } from './notification.service';
+import { sendVerificationNotification, sendFixedNotification, sendRejectedNotification, sendOngoingNotification, notifyOfficerAssignment } from './notification.service';
 import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates, authorizeReportAction } from '@/src/lib/auth-helpers';
 import { getOrCreateMunicipalityFromOSM } from './municipality.service';
@@ -117,7 +117,7 @@ export async function transitionPotholeStatus({
     });
 
     // 4. Perform database updates and log history atomically in a transaction
-    return db.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
         const updateData: any = {
             status: newStatus,
         };
@@ -150,15 +150,23 @@ export async function transitionPotholeStatus({
             },
         });
 
-        // Trigger side-effects (background notifications)
-        if (newStatus === Status.VERIFIED) {
-            void sendVerificationNotification(pothole.userId, potholeId);
-        } else if (newStatus === Status.FIXED) {
-            void sendFixedNotification(pothole.userId, potholeId);
-        }
-
         return updatedPothole;
+    }, {
+        timeout: 15000
     });
+
+    // Trigger side-effects (background notifications) after transaction successfully commits
+    if (newStatus === Status.VERIFIED) {
+        void sendVerificationNotification(pothole.userId, potholeId);
+    } else if (newStatus === Status.FIXED) {
+        void sendFixedNotification(pothole.userId, potholeId);
+    } else if (newStatus === Status.REJECTED) {
+        void sendRejectedNotification(pothole.userId, potholeId, reason || undefined);
+    } else if (newStatus === Status.ONGOING) {
+        void sendOngoingNotification(pothole.userId, potholeId);
+    }
+
+    return result;
 }
 
 export async function updatePotholeStatus(
@@ -253,7 +261,7 @@ export async function assignPothole({
     }
 
     // 4. Update database atomically inside a transaction
-    return db.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
         const updatedPothole = await tx.pothole.update({
             where: { id: potholeId },
             data: {
@@ -290,7 +298,17 @@ export async function assignPothole({
         }
 
         return updatedPothole;
+    }, {
+        timeout: 15000
     });
+
+    // Trigger side-effects (non-blocking)
+    void notifyOfficerAssignment(officerId, potholeId, pothole.title);
+    if (newStatus !== oldStatus && newStatus === Status.ONGOING) {
+        void sendOngoingNotification(pothole.userId, potholeId);
+    }
+
+    return result;
 }
 
 export async function getMunicipalityDashboardQueue(params: {
