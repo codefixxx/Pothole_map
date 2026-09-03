@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Logo } from '@/src/components/logo';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MapPin } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { useState, useEffect } from 'react';
 import { cn } from '@/src/lib/utils';
@@ -12,9 +12,10 @@ import { DropdownMenuAvatar } from './dropdown-menu-avatar';
 import { User, Session } from 'better-auth';
 
 const menuItems = [
-    { name: 'Features', href: '#features' },
-    { name: 'Solution', href: '#solution' },
-    { name: 'Statistics', href: '#stats' },
+    { name: 'Live Map', href: '/map' },
+    { name: 'Features', href: '/#features' },
+    { name: 'Solution', href: '/#solution' },
+    { name: 'Statistics', href: '/#stats' },
 ];
 interface HeroHeaderProps {
     initialSession: { session: Session; user: User } | null;
@@ -101,7 +102,18 @@ export const HeroHeader = ({ initialSession }: HeroHeaderProps) => {
                                 </ul>
                             </div>
 
-                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
+                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:items-center sm:gap-2 sm:space-y-0 md:w-fit">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    size="sm"
+                                    className="hidden sm:inline-flex gap-1.5 h-8 border-primary/20 hover:border-primary/50"
+                                >
+                                    <Link href="/map">
+                                        <MapPin className="size-3.5 text-primary" />
+                                        <span>Live Map</span>
+                                    </Link>
+                                </Button>
                                 {currentSession ? (
                                     <DropdownMenuAvatar imageUrl={currentSession.user.image} name={currentSession.user.name} />
                                 ) : (
