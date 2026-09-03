@@ -1,6 +1,7 @@
 import { ThemeProvider } from '@/src/components/theme-provider';
 import './globals.css';
 import { Toaster } from '@/src/components/ui/sonner';
+import { TooltipProvider } from '@/src/components/ui/tooltip';
 
 interface RootLayoutProps {
     children: React.ReactNode;
@@ -22,7 +23,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         enableSystem
                         disableTransitionOnChange
                     >
-                        {children}
+                        <TooltipProvider delayDuration={200}>
+                            {children}
+                        </TooltipProvider>
                         <Toaster position="bottom-right" richColors />
                     </ThemeProvider>
                 </body>
