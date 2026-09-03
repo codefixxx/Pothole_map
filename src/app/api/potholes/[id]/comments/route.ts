@@ -16,7 +16,7 @@ export const POST = asyncHandler(async (req: Request, { params }: { params: { id
 
     const result = commentSchema.safeParse(body);
     if (!result.success) {
-        throw new AppError(result.error.errors[0].message, 400);
+        throw new AppError(result.error.issues[0]?.message || 'Invalid comment data', 400);
     }
 
     const comment = await addComment(session.user.id, potholeId, result.data.content);
