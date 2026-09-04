@@ -1,4 +1,4 @@
-import ResetPassword from '@/src/components/reset-password'
+import { ResetPassword } from '@/src/components/auth';
 import { Button } from '@/src/components/ui/button';
 import Link from 'next/link'
 

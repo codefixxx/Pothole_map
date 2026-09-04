@@ -1,4 +1,4 @@
-import { SettingsProfile } from "../../components/update-profile"
+import { SettingsProfile } from '@/src/components/auth';
 import { auth } from '@/src/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';

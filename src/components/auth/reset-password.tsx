@@ -7,7 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/src/components/ui/card';
-import ResetPasswordForm from '@/src/components/reset-password-form';
+import ResetPasswordForm from './reset-password-form';
 
 type ResetPasswordFormProps = {
     token: string;

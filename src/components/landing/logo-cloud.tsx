@@ -1,6 +1,4 @@
-import { InfiniteSlider } from '@/src/components/motion-primitives/infinite-slider';
-import { ProgressiveBlur } from '@/src/components/motion-primitives/progressive-blur';
-import ScrollAppear from './scroll-appear-wrapper';
+import { InfiniteSlider, ProgressiveBlur, ScrollAppear } from '@/src/components/motion';
 
 const logos = [
     {

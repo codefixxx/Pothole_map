@@ -1,8 +1,7 @@
 import { Bell, ClipboardPlus, MapPin, Radar } from 'lucide-react';
 import { ReactNode } from 'react';
 import { cn } from '@/src/lib/utils';
-import { ScrollTextEffect } from './scroll-text-effects';
-import ScrollAppear from './scroll-appear-wrapper';
+import { ScrollTextEffect, ScrollAppear } from '@/src/components/motion';
 
 interface Working {
     heading: string;

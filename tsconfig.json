@@ -21,8 +21,13 @@
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["./src/components/*"],
-      "@/lib/*": ["./src/lib/*"],
+      "@/layout/*": ["./src/components/layout/*"],
+      "@/auth/*": ["./src/components/auth/*"],
+      "@/landing/*": ["./src/components/landing/*"],
+      "@/map/*": ["./src/components/map/*"],
+      "@/motion/*": ["./src/components/motion/*"],
       "@/ui/*": ["./src/components/ui/*"],
+      "@/lib/*": ["./src/lib/*"],
       "@/hooks/*": ["./src/hooks/*"]
     }
   },

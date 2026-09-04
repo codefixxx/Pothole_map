@@ -1,4 +1,4 @@
-import { ThemeProvider } from '@/src/components/theme-provider';
+import { ThemeProvider } from '@/src/components/layout';
 import './globals.css';
 import { Toaster } from '@/src/components/ui/sonner';
 import { TooltipProvider } from '@/src/components/ui/tooltip';

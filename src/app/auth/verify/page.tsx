@@ -1,8 +1,7 @@
 import React from 'react';
-import EmailVerification from '@/src/components/email-verification';
+import { EmailVerification } from '@/src/components/auth';
 import { redirect } from 'next/navigation';
-import { Logo } from '@/src/components/logo';
-import { ThemeToggle } from '@/src/components/theme-toggle';
+import { Logo, ThemeToggle } from '@/src/components/layout';
 import { Badge } from '@/src/components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';

@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
-import { FieldDescription } from './ui/field';
+import { FieldDescription } from '@/src/components/ui/field';
 import { resetPassword } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';

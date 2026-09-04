@@ -8,10 +8,8 @@ import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { Input } from '@/src/components/ui/input';
-import { Logo } from '@/src/components/logo';
-import { ThemeToggle } from '@/src/components/theme-toggle';
+import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
 import { useSession } from '@/src/lib/auth-client';
-import { DropdownMenuAvatar } from '@/src/components/dropdown-menu-avatar';
 import { toast } from 'sonner';
 import {
     MapPin,

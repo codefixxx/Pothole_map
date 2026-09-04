@@ -1,7 +1,4 @@
-import { BorderTrail } from "./motion-primitives/border-trail"
-import { Tilt } from "./motion-primitives/tilt"
-import { ScrollTextEffect } from "./scroll-text-effects"
-import ScrollAppear from "./scroll-appear-wrapper"
+import { BorderTrail, Tilt, ScrollTextEffect, ScrollAppear } from "@/src/components/motion";
 
 const stats = [
     {
