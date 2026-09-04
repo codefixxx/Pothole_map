@@ -1,7 +1,6 @@
 import { Button } from '@/src/components/ui/button';
 import Link from 'next/link';
-import { BorderTrail } from './motion-primitives/border-trail';
-import ScrollAppear from './scroll-appear-wrapper';
+import { BorderTrail, ScrollAppear } from '@/src/components/motion';
 
 export default function CallToAction() {
     return (

@@ -1,10 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/src/components/ui/card'
 import { Car, TriangleAlert, Snail } from 'lucide-react'
 import { ReactNode } from 'react'
-import { BorderTrail } from './motion-primitives/border-trail'
-import { Tilt } from './motion-primitives/tilt'
-import { ScrollTextEffect } from './scroll-text-effects'
-import ScrollAppear from './scroll-appear-wrapper'
+import { BorderTrail, Tilt, ScrollTextEffect, ScrollAppear } from '@/src/components/motion';
 
 const items = [
     {

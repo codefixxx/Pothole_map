@@ -30,7 +30,7 @@ import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
 import { cn } from '@/src/lib/utils';
 import imageCompression from 'browser-image-compression';
-import { getCroppedImg } from '@/src/components/cropimage';
+import { getCroppedImg } from './cropimage';
 import AvatarCropper from './avatar-cropper';
 
 interface ProfileFormData {

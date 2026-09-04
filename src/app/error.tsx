@@ -2,8 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { Logo } from '@/src/components/logo';
-import { ThemeToggle } from '@/src/components/theme-toggle';
+import { Logo, ThemeToggle } from '@/src/components/layout';
 import { Button } from '@/src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { Badge } from '@/src/components/ui/badge';

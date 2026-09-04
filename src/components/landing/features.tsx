@@ -6,8 +6,7 @@ import {
     ShieldCheck,
     Zap,
 } from 'lucide-react';
-import { ScrollTextEffect } from './scroll-text-effects';
-import ScrollAppear from './scroll-appear-wrapper';
+import { ScrollTextEffect, ScrollAppear } from '@/src/components/motion';
 
 export default function Features() {
     return (

@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Logo } from '@/src/components/logo';
+import { Logo } from './logo';
 import { Menu, X, MapPin, Sparkles, Layers, BarChart3, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
 import { useScroll } from 'motion/react';
 import { useSession } from '@/src/lib/auth-client';
 import { DropdownMenuAvatar } from './dropdown-menu-avatar';
-import { ThemeToggle } from '@/src/components/theme-toggle';
+import { ThemeToggle } from './theme-toggle';
 import { User, Session } from 'better-auth';
 
 const menuItems = [

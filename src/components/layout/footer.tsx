@@ -1,6 +1,6 @@
 import { Instagram, Github } from 'lucide-react';
 import { Separator } from '@/src/components/ui/separator';
-import { Logo } from '@/src/components/logo';
+import { Logo } from './logo';
 import Link from 'next/link';
 
 const Footer = () => {

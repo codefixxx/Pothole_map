@@ -1,7 +1,7 @@
 'use client';
 
 import { useInView } from 'framer-motion';
-import { TextEffect } from '@/src/components/motion-primitives/text-effect';
+import { TextEffect } from './text-effect';
 import { useRef } from 'react';
 
 interface ScrollTextEffectProps {

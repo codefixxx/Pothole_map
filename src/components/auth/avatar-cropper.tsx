@@ -3,7 +3,7 @@
 import Cropper from 'react-easy-crop';
 import { useState } from 'react';
 import { Button } from '@/src/components/ui/button';
-import { Slider } from './ui/slider';
+import { Slider } from '@/src/components/ui/slider';
 const AvatarCropper = ({ image, onCropDone, onCancel }: any) => {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
@@ -32,7 +32,7 @@ const AvatarCropper = ({ image, onCropDone, onCancel }: any) => {
                 max={3}
                 step={0.1}
                 value={[zoom]}
-                onValueChange={([val]) => setZoom(val)}
+                onValueChange={(val: number[]) => setZoom(val[0])}
                 className="mt-4 w-64"
             />
 

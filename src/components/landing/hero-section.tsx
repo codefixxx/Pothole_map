@@ -4,9 +4,8 @@ import Image from 'next/image';
 import { TextEffect } from '@/src/components/ui/text-effect';
 import { AnimatedGroup } from '@/src/components/ui/animated-group';
 import { LogoCloud } from './logo-cloud';
-import { BorderTrail } from './motion-primitives/border-trail';
-import { Tilt } from './motion-primitives/tilt';
-import HeroHeaderWrapper from './header-wrapper';
+import { BorderTrail, Tilt } from '@/src/components/motion';
+import HeroHeaderWrapper from '@/src/components/layout/header-wrapper';
 
 const transitionVariants = {
     item: {
