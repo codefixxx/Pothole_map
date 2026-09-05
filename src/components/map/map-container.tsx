@@ -3,7 +3,8 @@
 import React, { useEffect, useImperativeHandle, useRef, useState, forwardRef } from 'react';
 import { Map as MapLibreMap, Marker, NavigationControl, GeolocateControl, Popup } from 'maplibre-gl';
 import { useTheme } from 'next-themes';
-import { MAP_STYLES, DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MapMarkerItem, STATUS_COLORS } from '@/src/lib/map-config';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { MAP_STYLES, OSM_RASTER_STYLE, DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MapMarkerItem, STATUS_COLORS } from '@/src/lib/map-config';
 import { cn } from '@/src/lib/utils';
 
 export interface MapContainerRef {
@@ -85,32 +86,74 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     useEffect(() => {
         if (!mapContainerRef.current) return;
 
-        const map = new MapLibreMap({
-            container: mapContainerRef.current,
-            style: activeStyle,
-            center: center,
-            zoom: zoom,
-            interactive: interactive,
-            attributionControl: false,
-        });
+        let map: MapLibreMap | null = null;
+        let timer: NodeJS.Timeout | null = null;
 
-        if (showControls) {
-            map.addControl(new NavigationControl({ showCompass: true, visualizePitch: true }), 'top-right');
-            const geolocate = new GeolocateControl({
-                positionOptions: { enableHighAccuracy: true },
-                trackUserLocation: true,
+        try {
+            map = new MapLibreMap({
+                container: mapContainerRef.current,
+                style: activeStyle,
+                center: center,
+                zoom: zoom,
+                interactive: interactive,
+                attributionControl: false,
             });
-            map.addControl(geolocate, 'top-right');
+
+            if (showControls) {
+                map.addControl(new NavigationControl({ showCompass: true, visualizePitch: true }), 'top-right');
+                const geolocate = new GeolocateControl({
+                    positionOptions: { enableHighAccuracy: true },
+                    trackUserLocation: true,
+                });
+                map.addControl(geolocate, 'top-right');
+            }
+
+            const markLoaded = () => {
+                setMapLoaded(true);
+            };
+
+            map.on('load', markLoaded);
+            map.on('styledata', markLoaded);
+            map.once('render', markLoaded);
+
+            // Resilient fallback if vector tiles fail or are blocked
+            map.on('error', (e) => {
+                console.warn('[MapContainer] MapLibre warning/error:', e);
+                if (e && (e as any).error && (e as any).error.message?.includes('style')) {
+                    try {
+                        map?.setStyle(OSM_RASTER_STYLE as any);
+                    } catch {}
+                }
+            });
+
+            // Ensure loading spinner dismisses once map renders or within 1.5s
+            timer = setTimeout(() => {
+                setMapLoaded(true);
+            }, 1500);
+
+            mapRef.current = map;
+        } catch (err: any) {
+            console.error('[MapContainer] MapLibre initialization failed, falling back to raster style:', err);
+            try {
+                map = new MapLibreMap({
+                    container: mapContainerRef.current,
+                    style: OSM_RASTER_STYLE as any,
+                    center: center,
+                    zoom: zoom,
+                    interactive: interactive,
+                    attributionControl: false,
+                });
+                mapRef.current = map;
+                setMapLoaded(true);
+            } catch (fallbackErr) {
+                console.error('[MapContainer] Critical map failure:', fallbackErr);
+                setMapLoaded(true);
+            }
         }
 
-        map.on('load', () => {
-            setMapLoaded(true);
-        });
-
-        mapRef.current = map;
-
         return () => {
-            map.remove();
+            if (timer) clearTimeout(timer);
+            map?.remove();
             mapRef.current = null;
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,17 +161,23 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     // Update style when theme changes
     useEffect(() => {
         if (!mapRef.current || !mapLoaded) return;
-        mapRef.current.setStyle(activeStyle);
+        try {
+            mapRef.current.setStyle(activeStyle);
+        } catch (err) {
+            console.warn('[MapContainer] Could not update style on theme change:', err);
+        }
     }, [activeStyle, mapLoaded]);
 
     // Update center if props change
     useEffect(() => {
         if (!mapRef.current || !mapLoaded) return;
-        mapRef.current.easeTo({
-            center: center,
-            zoom: zoom,
-            duration: 800,
-        });
+        try {
+            mapRef.current.easeTo({
+                center: center,
+                zoom: zoom,
+                duration: 800,
+            });
+        } catch {}
     }, [center, zoom, mapLoaded]);
 
     // Render Markers

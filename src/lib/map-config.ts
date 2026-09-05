@@ -1,8 +1,33 @@
 export const MAP_STYLES = {
-    light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+    light: 'https://tiles.openfreemap.org/styles/liberty',
+    dark: 'https://tiles.openfreemap.org/styles/dark',
+    cartoLight: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+    cartoDark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
     fallbackLight: 'https://tiles.openfreemap.org/styles/liberty',
     fallbackDark: 'https://tiles.openfreemap.org/styles/dark',
+};
+
+export const OSM_RASTER_STYLE = {
+    version: 8,
+    sources: {
+        'osm-tiles': {
+            type: 'raster',
+            tiles: [
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            ],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors',
+        },
+    },
+    layers: [
+        {
+            id: 'osm-tiles-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+        },
+    ],
 };
 
 export const DEFAULT_MAP_CENTER: [number, number] = [77.209, 28.6139]; // Default: New Delhi [lng, lat]
