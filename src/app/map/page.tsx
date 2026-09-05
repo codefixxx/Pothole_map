@@ -9,6 +9,7 @@ import { Button } from '@/src/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { Input } from '@/src/components/ui/input';
 import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
+import { ReportModal, ReportFAB } from '@/src/components/report';
 import { useSession } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
 import {
@@ -129,6 +130,24 @@ export default function MapPage() {
     const [showSidebar, setShowSidebar] = useState(false);
     const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
     const [isLocating, setIsLocating] = useState(false);
+    const [isReportOpen, setIsReportOpen] = useState(false);
+
+    // Auto-open modal if navigated with ?report=true
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('report') === 'true') {
+                setIsReportOpen(true);
+            }
+        }
+    }, []);
+
+    // Handler when a new report is successfully filed
+    const handleReportCreated = (newMarker: MapMarkerItem) => {
+        setMarkers((prev) => [newMarker, ...prev]);
+        setSelectedMarker(newMarker);
+        mapRef.current?.flyTo([newMarker.longitude, newMarker.latitude], 16);
+    };
 
     // Fetch reports from backend
     useEffect(() => {
@@ -281,12 +300,14 @@ export default function MapPage() {
                         <span className="hidden sm:inline">{showSidebar ? 'Hide List' : 'Show List'}</span>
                     </Button>
 
-                    <Button asChild size="sm" className="gap-1.5 h-8 shadow-sm">
-                        <Link href="/auth/login">
-                            <PlusCircle className="size-3.5" />
-                            <span className="hidden sm:inline">Report Pothole</span>
-                            <span className="sm:hidden">Report</span>
-                        </Link>
+                    <Button
+                        size="sm"
+                        onClick={() => setIsReportOpen(true)}
+                        className="gap-1.5 h-8 shadow-sm bg-amber-600 hover:bg-amber-700 text-white font-medium"
+                    >
+                        <PlusCircle className="size-3.5" />
+                        <span className="hidden sm:inline">Report Pothole</span>
+                        <span className="sm:hidden">Report</span>
                     </Button>
 
                     <ThemeToggle />
@@ -581,6 +602,15 @@ export default function MapPage() {
                             </Card>
                         </div>
                     )}
+                    {/* Mobile & Desktop Floating Action Button */}
+                    <ReportFAB onClick={() => setIsReportOpen(true)} />
+
+                    {/* Report Hazard Modal Flow */}
+                    <ReportModal
+                        open={isReportOpen}
+                        onOpenChange={setIsReportOpen}
+                        onReportCreated={handleReportCreated}
+                    />
                 </div>
             </div>
         </div>

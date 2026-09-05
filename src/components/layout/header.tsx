@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Logo } from './logo';
-import { Menu, X, MapPin, Sparkles, Layers, BarChart3, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Menu, X, MapPin, Sparkles, Layers, BarChart3, ArrowRight, ShieldCheck, PlusCircle } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
 import { useScroll } from 'motion/react';
@@ -95,10 +95,18 @@ export const HeroHeader = ({ initialSession }: HeroHeaderProps) => {
                             <ThemeToggle />
 
                             {/* Map CTA Button on desktop */}
-                            <Button asChild size="sm" className="hidden sm:inline-flex gap-1.5 h-9 shadow-xs font-medium">
+                            <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex gap-1.5 h-9 shadow-xs font-medium">
                                 <Link href="/map">
                                     <MapPin className="size-3.5" />
                                     <span>Explore Map</span>
+                                </Link>
+                            </Button>
+
+                            {/* Report Hazard CTA */}
+                            <Button asChild size="sm" className="hidden sm:inline-flex gap-1.5 h-9 shadow-xs font-medium bg-amber-600 hover:bg-amber-700 text-white">
+                                <Link href="/map?report=true">
+                                    <PlusCircle className="size-3.5" />
+                                    <span>Report Hazard</span>
                                 </Link>
                             </Button>
 
@@ -160,10 +168,17 @@ export const HeroHeader = ({ initialSession }: HeroHeaderProps) => {
                         </div>
 
                         <div className="mt-4 pt-4 border-t border-border/60 flex flex-col gap-2">
-                            <Button asChild size="sm" className="w-full justify-center gap-1.5 h-10 shadow-xs">
+                            <Button asChild size="sm" variant="outline" className="w-full justify-center gap-1.5 h-10 shadow-xs">
                                 <Link href="/map" onClick={() => setMenuOpen(false)}>
                                     <MapPin className="size-4" />
                                     <span>Explore Live Map</span>
+                                </Link>
+                            </Button>
+
+                            <Button asChild size="sm" className="w-full justify-center gap-1.5 h-10 shadow-xs bg-amber-600 hover:bg-amber-700 text-white">
+                                <Link href="/map?report=true" onClick={() => setMenuOpen(false)}>
+                                    <PlusCircle className="size-4" />
+                                    <span>Report Road Hazard</span>
                                 </Link>
                             </Button>
 

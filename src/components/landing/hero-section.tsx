@@ -89,7 +89,7 @@ export default function HeroSection() {
                                             size="lg"
                                             className="rounded-xl px-5 text-base"
                                         >
-                                            <Link href="/map">
+                                            <Link href="/map?report=true">
                                                 <span className="text-nowrap">
                                                     Report Pothole
                                                 </span>
