@@ -4,6 +4,7 @@ import React, { useEffect, useImperativeHandle, useRef, useState, forwardRef } f
 import { Map as MapLibreMap, Marker, NavigationControl, GeolocateControl, Popup } from 'maplibre-gl';
 import { useTheme } from 'next-themes';
 import { MAP_STYLES, DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MapMarkerItem, STATUS_COLORS } from '@/src/lib/map-config';
+import { cn } from '@/src/lib/utils';
 
 export interface MapContainerRef {
     flyTo: (coords: [number, number], zoom?: number) => void;
@@ -229,7 +230,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     }, [draggableMarkerCoord, mapLoaded, onDraggableMarkerMove]);
 
     return (
-        <div className={`relative overflow-hidden rounded-xl border ${className}`}>
+        <div className={cn('relative overflow-hidden rounded-xl border w-full h-full min-h-[400px]', className)}>
             {!mapLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted/40 backdrop-blur-xs z-10">
                     <div className="flex flex-col items-center gap-3">
