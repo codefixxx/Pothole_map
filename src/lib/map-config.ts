@@ -1,13 +1,57 @@
-export const MAP_STYLES = {
-    light: 'https://tiles.openfreemap.org/styles/liberty',
-    dark: 'https://tiles.openfreemap.org/styles/dark',
-    cartoLight: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-    cartoDark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-    fallbackLight: 'https://tiles.openfreemap.org/styles/liberty',
-    fallbackDark: 'https://tiles.openfreemap.org/styles/dark',
+export const OSM_LIGHT_STYLE: any = {
+    version: 8,
+    sources: {
+        'osm-tiles': {
+            type: 'raster',
+            tiles: [
+                'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            ],
+            tileSize: 256,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        },
+    },
+    layers: [
+        {
+            id: 'osm-tiles-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+        },
+    ],
 };
 
-export const OSM_RASTER_STYLE = {
+export const OSM_DARK_STYLE: any = {
+    version: 8,
+    sources: {
+        'dark-tiles': {
+            type: 'raster',
+            tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+            ],
+            tileSize: 256,
+            attribution: '&copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+        },
+    },
+    layers: [
+        {
+            id: 'dark-tiles-layer',
+            type: 'raster',
+            source: 'dark-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+        },
+    ],
+};
+
+export const MAP_STYLES = {
+    light: OSM_LIGHT_STYLE,
+    dark: OSM_DARK_STYLE,
+};
+
+export const OSM_RASTER_STYLE: any = {
     version: 8,
     sources: {
         'osm-tiles': {
