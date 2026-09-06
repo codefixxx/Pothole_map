@@ -83,7 +83,7 @@ export interface MapMarkerItem {
     longitude: number;
     title?: string;
     description?: string;
-    status: 'PENDING' | 'UNDER_REVIEW' | 'VERIFIED' | 'ASSIGNED' | 'IN_PROGRESS' | 'REPAIR_COMPLETED' | 'RESOLVED' | 'REJECTED';
+    status: 'PENDING' | 'UNDER_REVIEW' | 'VERIFIED' | 'ASSIGNED' | 'IN_PROGRESS' | 'ONGOING' | 'REPAIR_COMPLETED' | 'RESOLVED' | 'FIXED' | 'REJECTED';
     severity?: 'LOW' | 'MEDIUM' | 'HIGH';
     upvotesCount?: number;
     imageUrl?: string;
@@ -120,6 +120,12 @@ export const STATUS_COLORS: Record<string, { bg: string; text: string; border: s
         border: 'border-blue-500/30',
         hex: '#3b82f6',
     },
+    ONGOING: {
+        bg: 'bg-sky-500/10 dark:bg-sky-500/20',
+        text: 'text-sky-700 dark:text-sky-400',
+        border: 'border-sky-500/30',
+        hex: '#0ea5e9',
+    },
     REPAIR_COMPLETED: {
         bg: 'bg-teal-500/10 dark:bg-teal-500/20',
         text: 'text-teal-700 dark:text-teal-400',
@@ -127,6 +133,12 @@ export const STATUS_COLORS: Record<string, { bg: string; text: string; border: s
         hex: '#14b8a6',
     },
     RESOLVED: {
+        bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
+        text: 'text-emerald-700 dark:text-emerald-400',
+        border: 'border-emerald-500/30',
+        hex: '#10b981',
+    },
+    FIXED: {
         bg: 'bg-emerald-500/10 dark:bg-emerald-500/20',
         text: 'text-emerald-700 dark:text-emerald-400',
         border: 'border-emerald-500/30',

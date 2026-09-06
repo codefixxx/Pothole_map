@@ -7,3 +7,4 @@ export * from './report';
 export * from './social';
 export * from './dashboard';
 export * from './notifications';
+export * from './municipality';

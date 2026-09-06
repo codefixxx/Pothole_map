@@ -22,6 +22,7 @@ interface MapContainerProps {
     className?: string;
     showControls?: boolean;
     interactive?: boolean;
+    jurisdictionPolygon?: any;
 }
 
 function getStatusSvgIcon(status: string) {
@@ -55,6 +56,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         className = 'w-full h-full min-h-[400px]',
         showControls = true,
         interactive = true,
+        jurisdictionPolygon,
     },
     ref
 ) {
@@ -179,6 +181,57 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
             });
         } catch {}
     }, [center, zoom, mapLoaded]);
+
+    // Render Jurisdiction Boundary Polygon
+    useEffect(() => {
+        if (!mapRef.current || !mapLoaded || !jurisdictionPolygon) return;
+        const map = mapRef.current;
+        try {
+            const geom = jurisdictionPolygon.type
+                ? jurisdictionPolygon
+                : {
+                      type: 'Polygon',
+                      coordinates: jurisdictionPolygon.coordinates || jurisdictionPolygon,
+                  };
+
+            const geojsonData = {
+                type: 'Feature',
+                properties: {},
+                geometry: geom,
+            };
+
+            const source = map.getSource('jurisdiction-boundary') as any;
+            if (source) {
+                source.setData(geojsonData);
+            } else {
+                map.addSource('jurisdiction-boundary', {
+                    type: 'geojson',
+                    data: geojsonData as any,
+                });
+                map.addLayer({
+                    id: 'jurisdiction-fill',
+                    type: 'fill',
+                    source: 'jurisdiction-boundary',
+                    paint: {
+                        'fill-color': '#3b82f6',
+                        'fill-opacity': 0.1,
+                    },
+                });
+                map.addLayer({
+                    id: 'jurisdiction-line',
+                    type: 'line',
+                    source: 'jurisdiction-boundary',
+                    paint: {
+                        'line-color': '#2563eb',
+                        'line-width': 2.5,
+                        'line-dasharray': [3, 2],
+                    },
+                });
+            }
+        } catch (err) {
+            console.warn('[MapContainer] Error rendering jurisdiction polygon:', err);
+        }
+    }, [jurisdictionPolygon, mapLoaded]);
 
     // Render Markers
     useEffect(() => {
