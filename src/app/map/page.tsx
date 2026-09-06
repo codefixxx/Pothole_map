@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/src/components/ui/input';
 import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
 import { ReportModal, ReportFAB } from '@/src/components/report';
+import { PotholeDetailModal } from '@/src/components/pothole-detail';
 import { useSession } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
 import {
@@ -131,13 +132,18 @@ export default function MapPage() {
     const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
     const [isLocating, setIsLocating] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
+    const [inspectingPotholeId, setInspectingPotholeId] = useState<string | null>(null);
 
-    // Auto-open modal if navigated with ?report=true
+    // Auto-open modals if navigated with ?report=true or ?inspect=[id]
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             if (params.get('report') === 'true') {
                 setIsReportOpen(true);
+            }
+            const inspectId = params.get('inspect') || params.get('pothole');
+            if (inspectId) {
+                setInspectingPotholeId(inspectId);
             }
         }
     }, []);
@@ -592,12 +598,29 @@ export default function MapPage() {
                                         </span>
                                     </Button>
 
-                                    <Button asChild size="sm" variant="secondary" className="gap-1 text-xs h-8">
-                                        <Link href={`/auth/login?redirect=/potholes/${selectedMarker.id}`}>
+                                    <div className="flex items-center gap-1.5">
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => setInspectingPotholeId(selectedMarker.id)}
+                                            className="gap-1 text-xs h-8 font-medium"
+                                        >
                                             <span>Inspect Report</span>
                                             <ArrowUpRight className="size-3.5" />
-                                        </Link>
-                                    </Button>
+                                        </Button>
+                                        <Button
+                                            asChild
+                                            size="icon"
+                                            variant="ghost"
+                                            className="size-8 text-muted-foreground hover:text-foreground"
+                                            title="Open standalone page"
+                                        >
+                                            <Link href={`/potholes/${selectedMarker.id}`}>
+                                                <ExternalLink className="size-3.5" />
+                                            </Link>
+                                        </Button>
+                                    </div>
                                 </CardFooter>
                             </Card>
                         </div>
@@ -610,6 +633,13 @@ export default function MapPage() {
                         open={isReportOpen}
                         onOpenChange={setIsReportOpen}
                         onReportCreated={handleReportCreated}
+                    />
+
+                    {/* Detailed Pothole Inspection Modal */}
+                    <PotholeDetailModal
+                        open={Boolean(inspectingPotholeId)}
+                        onOpenChange={(open) => !open && setInspectingPotholeId(null)}
+                        potholeId={inspectingPotholeId}
                     />
                 </div>
             </div>
