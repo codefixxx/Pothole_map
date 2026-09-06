@@ -183,3 +183,42 @@ export async function updateCandidateStatus(
         data: { status },
     });
 }
+
+/**
+ * Retrieves all duplicate candidates associated with a municipality.
+ */
+export async function findCandidatesForMunicipality(
+    municipalityId: string,
+    status: DuplicateStatus = DuplicateStatus.POTENTIAL
+) {
+    return db.duplicateCandidate.findMany({
+        where: {
+            status,
+            OR: [
+                { pothole: { municipalityId } },
+                { duplicate: { municipalityId } },
+            ],
+        },
+        include: {
+            pothole: {
+                include: {
+                    user: { select: { id: true, name: true, image: true } },
+                    votes: { select: { id: true } },
+                    comments: { select: { id: true } },
+                    assignedOfficer: { select: { id: true, name: true } },
+                },
+            },
+            duplicate: {
+                include: {
+                    user: { select: { id: true, name: true, image: true } },
+                    votes: { select: { id: true } },
+                    comments: { select: { id: true } },
+                    assignedOfficer: { select: { id: true, name: true } },
+                },
+            },
+        },
+        orderBy: {
+            confidenceScore: 'desc',
+        },
+    });
+}

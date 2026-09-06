@@ -6,6 +6,7 @@ import Image from 'next/image';
 import {
     TriagePotholeItem,
     MunicipalStatus,
+    DuplicateCandidateItem,
 } from './types';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
@@ -23,6 +24,7 @@ import {
     ExternalLink,
     AlertTriangle,
     RotateCcw,
+    GitMerge,
 } from 'lucide-react';
 
 interface TriageTableProps {
@@ -32,6 +34,8 @@ interface TriageTableProps {
     onOpenTransitionModal: (pothole: TriagePotholeItem) => void;
     onOpenAssignModal: (pothole: TriagePotholeItem) => void;
     isManagerOrAdmin?: boolean;
+    duplicateCandidates?: DuplicateCandidateItem[];
+    onOpenDuplicateReview?: (candidate: DuplicateCandidateItem) => void;
 }
 
 const STATUS_CONFIG: Record<
@@ -113,6 +117,8 @@ export function TriageTable({
     onOpenTransitionModal,
     onOpenAssignModal,
     isManagerOrAdmin = true,
+    duplicateCandidates = [],
+    onOpenDuplicateReview,
 }: TriageTableProps) {
     if (potholes.length === 0) {
         return (
@@ -148,6 +154,9 @@ export function TriageTable({
                         const StatusIcon = statusConfig.icon;
                         const upvoteCount = pothole.votes?.length ?? pothole.votesCount ?? 0;
                         const commentCount = pothole.comments?.length ?? pothole.commentsCount ?? 0;
+                        const matchingCandidate = duplicateCandidates.find(
+                            (c) => c.status === 'POTENTIAL' && (c.potholeId === pothole.id || c.duplicateId === pothole.id)
+                        );
 
                         return (
                             <tr
@@ -178,10 +187,24 @@ export function TriageTable({
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
                                                 <span className="font-mono text-[10px] text-muted-foreground font-semibold">
                                                     #{pothole.id.slice(-6).toUpperCase()}
                                                 </span>
+                                                {matchingCandidate && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onOpenDuplicateReview?.(matchingCandidate);
+                                                        }}
+                                                        className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition-colors cursor-pointer"
+                                                        title="Potential duplicate detected. Click to compare & resolve."
+                                                    >
+                                                        <GitMerge className="size-2.5" />
+                                                        <span>Duplicate Match ({Math.round(matchingCandidate.confidenceScore * 100)}%)</span>
+                                                    </button>
+                                                )}
                                             </div>
                                             <p className="font-semibold text-foreground text-xs line-clamp-1 group-hover:text-primary transition-colors">
                                                 {pothole.title}

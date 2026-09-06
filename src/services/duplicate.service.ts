@@ -235,9 +235,37 @@ export async function resolveDuplicateCandidate(
 
     const updated = await duplicateRepository.updateCandidateStatus(candidateId, status);
 
-    // If CONFIRMED, we should automatically update the secondary duplicate pothole status?
-    // In later steps, when a duplicate is confirmed, we might close it as duplicate or link it.
-    // For Step 10, simply marking the candidate relation status is sufficient.
+    if (status === DuplicateStatus.CONFIRMED) {
+        // Mark the secondary duplicate report as REJECTED and log transition history
+        try {
+            await db.pothole.update({
+                where: { id: candidate.duplicateId },
+                data: { status: Status.REJECTED },
+            });
+
+            await db.reportStatusHistory.create({
+                data: {
+                    potholeId: candidate.duplicateId,
+                    actorId,
+                    oldStatus: candidate.duplicate.status,
+                    newStatus: Status.REJECTED,
+                    reason: `Consolidated as duplicate of primary report #${candidate.potholeId.slice(-6)}`,
+                },
+            });
+        } catch (err) {
+            console.error('Failed to update duplicate pothole status on confirmation:', err);
+        }
+    }
 
     return updated;
+}
+
+/**
+ * Retrieves pending or resolved duplicate candidate pairs for a municipality.
+ */
+export async function getMunicipalityDuplicateCandidates(
+    municipalityId: string,
+    status: DuplicateStatus = DuplicateStatus.POTENTIAL
+) {
+    return duplicateRepository.findCandidatesForMunicipality(municipalityId, status);
 }
