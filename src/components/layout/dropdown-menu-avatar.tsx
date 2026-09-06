@@ -16,6 +16,7 @@ import {
 } from '@/src/components/ui/dropdown-menu';
 import {
     UserRoundPen,
+    LayoutDashboard,
     BellIcon,
     CreditCardIcon,
     LogOutIcon,
@@ -86,15 +87,25 @@ export function DropdownMenuAvatar({
                 </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href="/dashboard"
+                            className="flex items-center gap-2"
+                        >
+                            <LayoutDashboard className="size-4 text-primary" />
+                            <span>Civic Dashboard</span>
+                        </Link>
+                    </DropdownMenuItem>
+
                     <DropdownMenuItem asChild>
                         <Link
                             href="/profile-settings"
                             className="flex items-center gap-2"
                         >
                             <UserRoundPen className="size-4" />
-                            Profile
+                            <span>Profile</span>
                         </Link>
                     </DropdownMenuItem>
 
