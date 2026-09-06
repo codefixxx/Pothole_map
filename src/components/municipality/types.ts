@@ -88,3 +88,50 @@ export const CENTRALIZED_TRANSITION_POLICY: Record<MunicipalStatus, StateTransit
         description: 'Defect dismissed or marked duplicate. Can be reopened for reconsideration with explanation.',
     },
 };
+
+export interface DuplicateCandidateItem {
+    id: string;
+    potholeId: string;
+    duplicateId: string;
+    confidenceScore: number;
+    visualSimilarity?: number | null;
+    distanceInMeters?: number;
+    status: 'POTENTIAL' | 'CONFIRMED' | 'REJECTED';
+    createdAt: string;
+    pothole: {
+        id: string;
+        title: string;
+        description: string;
+        latitude: number;
+        longitude: number;
+        status: MunicipalStatus;
+        severity: number;
+        priorityScore?: number;
+        imageUrl?: string | null;
+        city?: string | null;
+        state?: string | null;
+        createdAt: string;
+        user?: { name?: string | null; image?: string | null };
+        votesCount?: number;
+        commentsCount?: number;
+        assignedOfficer?: { id: string; name: string } | null;
+    };
+    duplicate: {
+        id: string;
+        title: string;
+        description: string;
+        latitude: number;
+        longitude: number;
+        status: MunicipalStatus;
+        severity: number;
+        priorityScore?: number;
+        imageUrl?: string | null;
+        city?: string | null;
+        state?: string | null;
+        createdAt: string;
+        user?: { name?: string | null; image?: string | null };
+        votesCount?: number;
+        commentsCount?: number;
+        assignedOfficer?: { id: string; name: string } | null;
+    };
+}

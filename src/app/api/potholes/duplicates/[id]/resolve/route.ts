@@ -11,15 +11,27 @@ export const POST = asyncHandler(async (
 ) => {
     const { id: candidateId } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) {
-        throw new AppError('Unauthorized', 401);
-    }
-
     const body = await req.json();
     const { status } = body;
 
     if (!status || (status !== DuplicateStatus.CONFIRMED && status !== DuplicateStatus.REJECTED)) {
         throw new AppError('Invalid or missing status. Must be CONFIRMED or REJECTED.', 400);
+    }
+
+    // Support demo mode resolution without requiring DB record
+    if (candidateId.startsWith('demo-')) {
+        return Response.json({
+            success: true,
+            data: {
+                id: candidateId,
+                status,
+                updatedAt: new Date().toISOString(),
+            },
+        });
+    }
+
+    if (!session) {
+        throw new AppError('Unauthorized', 401);
     }
 
     const resolvedCandidate = await duplicateService.resolveDuplicateCandidate(
