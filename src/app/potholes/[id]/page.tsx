@@ -7,6 +7,7 @@ import { PotholeDetailView, PotholeDetailData } from '@/src/components/pothole-d
 import { Button } from '@/src/components/ui/button';
 import { Skeleton } from '@/src/components/ui/skeleton';
 import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
+import { NotificationBell } from '@/src/components/notifications';
 import { useSession } from '@/src/lib/auth-client';
 import {
     ArrowLeft,
@@ -119,6 +120,8 @@ export default function PotholeDetailPage({
                             <span className="sm:hidden">Report</span>
                         </Link>
                     </Button>
+
+                    <NotificationBell className="size-8" />
 
                     <ThemeToggle />
 
