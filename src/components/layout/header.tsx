@@ -10,6 +10,7 @@ import { useScroll } from 'motion/react';
 import { useSession } from '@/src/lib/auth-client';
 import { DropdownMenuAvatar } from './dropdown-menu-avatar';
 import { ThemeToggle } from './theme-toggle';
+import { NotificationBell } from '@/src/components/notifications';
 import { User, Session } from 'better-auth';
 
 const menuItems = [
@@ -91,6 +92,9 @@ export const HeroHeader = ({ initialSession }: HeroHeaderProps) => {
 
                         {/* Right: Actions */}
                         <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Notification Bell */}
+                            <NotificationBell />
+
                             {/* Theme Toggle */}
                             <ThemeToggle />
 

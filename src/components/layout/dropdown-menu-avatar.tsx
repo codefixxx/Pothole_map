@@ -25,6 +25,7 @@ import { signOut } from '@/src/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import { NotificationSheet } from '@/src/components/notifications/notification-sheet';
 
 interface DropdownMenuAvatarProps {
     imageUrl?: string | null;
@@ -37,6 +38,7 @@ export function DropdownMenuAvatar({
 }: DropdownMenuAvatarProps) {
     const router = useRouter();
     const [imgLoaded, setImgLoaded] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const handleClick = async () => {
         await signOut({
@@ -114,22 +116,30 @@ export function DropdownMenuAvatar({
                         Billing
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem className="flex items-center gap-2">
+                    <DropdownMenuItem
+                        className="flex items-center gap-2 cursor-pointer"
+                        onSelect={() => setShowNotifications(true)}
+                    >
                         <BellIcon className="size-4" />
-                        Notifications
+                        <span>Notifications</span>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                    className="flex items-center gap-2 text-destructive"
+                    className="flex items-center gap-2 text-destructive cursor-pointer"
                     onSelect={handleClick}
                 >
                     <LogOutIcon className="size-4" />
                     Sign Out
                 </DropdownMenuItem>
             </DropdownMenuContent>
+
+            <NotificationSheet
+                open={showNotifications}
+                onOpenChange={setShowNotifications}
+            />
         </DropdownMenu>
     );
 }

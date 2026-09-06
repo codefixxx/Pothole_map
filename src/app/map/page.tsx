@@ -12,6 +12,7 @@ import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
 import { ReportModal, ReportFAB } from '@/src/components/report';
 import { PotholeDetailModal } from '@/src/components/pothole-detail';
 import { UpvoteButton, ShareDialog } from '@/src/components/social';
+import { NotificationBell } from '@/src/components/notifications';
 import { useSession } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
 import {
@@ -316,6 +317,8 @@ export default function MapPage() {
                         <span className="hidden sm:inline">Report Pothole</span>
                         <span className="sm:hidden">Report</span>
                     </Button>
+
+                    <NotificationBell className="size-8" />
 
                     <ThemeToggle />
 

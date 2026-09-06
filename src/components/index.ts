@@ -4,3 +4,6 @@ export * from './landing';
 export * from './map';
 export * from './motion';
 export * from './report';
+export * from './social';
+export * from './dashboard';
+export * from './notifications';

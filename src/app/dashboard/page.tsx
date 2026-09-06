@@ -6,6 +6,7 @@ import { Logo } from '@/src/components/layout/logo';
 import { ThemeToggle } from '@/src/components/layout/theme-toggle';
 import { DropdownMenuAvatar } from '@/src/components/layout/dropdown-menu-avatar';
 import { CitizenDashboardView } from '@/src/components/dashboard';
+import { NotificationBell } from '@/src/components/notifications';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
 import {
@@ -84,6 +85,8 @@ export default async function DashboardPage({
                             </Link>
                         </Button>
                     )}
+
+                    <NotificationBell className="size-8" />
 
                     <ThemeToggle />
 
