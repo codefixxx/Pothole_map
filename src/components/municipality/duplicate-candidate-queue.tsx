@@ -179,6 +179,7 @@ export function DuplicateCandidateQueue({
                                                     src={cand.pothole.imageUrl}
                                                     alt={cand.pothole.title}
                                                     fill
+                                                    unoptimized
                                                     className="object-cover"
                                                 />
                                             ) : (
@@ -220,6 +221,7 @@ export function DuplicateCandidateQueue({
                                                     src={cand.duplicate.imageUrl}
                                                     alt={cand.duplicate.title}
                                                     fill
+                                                    unoptimized
                                                     className="object-cover"
                                                 />
                                             ) : (

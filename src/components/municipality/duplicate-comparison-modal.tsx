@@ -219,6 +219,7 @@ export function DuplicateComparisonModal({
                                     src={primary.imageUrl}
                                     alt={primary.title}
                                     fill
+                                    unoptimized
                                     className="object-cover"
                                 />
                             ) : (
@@ -310,6 +311,7 @@ export function DuplicateComparisonModal({
                                     src={duplicate.imageUrl}
                                     alt={duplicate.title}
                                     fill
+                                    unoptimized
                                     className="object-cover"
                                 />
                             ) : (
