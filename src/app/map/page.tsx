@@ -11,6 +11,7 @@ import { Input } from '@/src/components/ui/input';
 import { Logo, ThemeToggle, DropdownMenuAvatar } from '@/src/components/layout';
 import { ReportModal, ReportFAB } from '@/src/components/report';
 import { PotholeDetailModal } from '@/src/components/pothole-detail';
+import { UpvoteButton, ShareDialog } from '@/src/components/social';
 import { useSession } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
 import {
@@ -584,21 +585,25 @@ export default function MapPage() {
                                     </div>
                                 )}
 
-                                <CardFooter className="flex items-center justify-between pt-3 pb-4">
-                                    <Button
-                                        variant={userVotes[selectedMarker.id] ? 'default' : 'outline'}
+                                <CardFooter className="flex items-center justify-between pt-3 pb-4 gap-2 flex-wrap">
+                                    <UpvoteButton
+                                        potholeId={selectedMarker.id}
+                                        initialVotesCount={selectedMarker.upvotesCount || 0}
                                         size="sm"
-                                        onClick={(e) => handleUpvote(selectedMarker.id, e)}
-                                        className="gap-1.5 text-xs h-8"
-                                    >
-                                        <ThumbsUp className="size-3.5" />
-                                        <span>
-                                            {selectedMarker.upvotesCount || 0}{' '}
-                                            {selectedMarker.upvotesCount === 1 ? 'Confirmation' : 'Confirmations'}
-                                        </span>
-                                    </Button>
+                                    />
 
                                     <div className="flex items-center gap-1.5">
+                                        <ShareDialog
+                                            pothole={{
+                                                id: selectedMarker.id,
+                                                title: selectedMarker.title || 'Road Hazard',
+                                                city: (selectedMarker as any).city || null,
+                                                severity: selectedMarker.severity,
+                                                status: selectedMarker.status,
+                                            }}
+                                            size="sm"
+                                            showLabel={false}
+                                        />
                                         <Button
                                             type="button"
                                             size="sm"
@@ -606,7 +611,7 @@ export default function MapPage() {
                                             onClick={() => setInspectingPotholeId(selectedMarker.id)}
                                             className="gap-1 text-xs h-8 font-medium"
                                         >
-                                            <span>Inspect Report</span>
+                                            <span>Inspect</span>
                                             <ArrowUpRight className="size-3.5" />
                                         </Button>
                                         <Button
