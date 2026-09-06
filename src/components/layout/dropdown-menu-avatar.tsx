@@ -20,6 +20,7 @@ import {
     BellIcon,
     CreditCardIcon,
     LogOutIcon,
+    Building2,
 } from 'lucide-react';
 import { signOut } from '@/src/lib/auth-client';
 import { useRouter } from 'next/navigation';
@@ -98,6 +99,16 @@ export function DropdownMenuAvatar({
                         >
                             <LayoutDashboard className="size-4 text-primary" />
                             <span>Civic Dashboard</span>
+                        </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                        <Link
+                            href="/municipality/dashboard"
+                            className="flex items-center gap-2"
+                        >
+                            <Building2 className="size-4 text-blue-600 dark:text-blue-400" />
+                            <span>Municipality Portal</span>
                         </Link>
                     </DropdownMenuItem>
 
