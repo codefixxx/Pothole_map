@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Badge } from '@/src/components/ui/badge';
 import { Button } from '@/src/components/ui/button';
@@ -12,18 +12,17 @@ import { PotholeMeta } from './pothole-meta';
 import { MapView } from '@/src/components/map/map-view';
 import { STATUS_COLORS, MapMarkerItem } from '@/src/lib/map-config';
 import {
-    ThumbsUp,
-    Share2,
+    UpvoteButton,
+    FollowButton,
+    ShareDialog,
+    CommentThread,
+} from '@/src/components/social';
+import {
     MapPin,
     ExternalLink,
-    MessageSquare,
-    AlertTriangle,
     CheckCircle2,
-    Calendar,
-    ArrowLeft,
     Clock,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { cn } from '@/src/lib/utils';
 
 export interface PotholeDetailData {
@@ -78,61 +77,8 @@ export function PotholeDetailView({
     onClose,
     className,
 }: PotholeDetailViewProps) {
-    const initialVotes = pothole.votes?.length || 0;
-    const [votesCount, setVotesCount] = useState<number>(initialVotes);
-    const [hasVoted, setHasVoted] = useState<boolean>(false);
-    const [isVoting, setIsVoting] = useState<boolean>(false);
-
     const isFixed = pothole.status === 'FIXED' || pothole.status === 'RESOLVED';
     const statusConfig = STATUS_COLORS[pothole.status] || STATUS_COLORS.PENDING;
-
-    // Upvote handler with optimistic update
-    const handleUpvote = async () => {
-        if (isVoting) return;
-
-        setIsVoting(true);
-        const nextVoted = !hasVoted;
-        setHasVoted(nextVoted);
-        setVotesCount((prev) => (nextVoted ? prev + 1 : Math.max(0, prev - 1)));
-
-        toast.success(
-            nextVoted
-                ? 'Upvote confirmed! You boosted this report’s priority.'
-                : 'Upvote removed.'
-        );
-
-        try {
-            await fetch(`/api/potholes/${pothole.id}/votes`, {
-                method: 'POST',
-            });
-        } catch {
-            // Graceful resilience
-        } finally {
-            setIsVoting(false);
-        }
-    };
-
-    // Share report handler
-    const handleShare = async () => {
-        const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/potholes/${pothole.id}` : '';
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: pothole.title,
-                    text: `Check out this road hazard report on PotholeMap: ${pothole.title}`,
-                    url: shareUrl,
-                });
-                return;
-            } catch {
-                // Fallback to clipboard
-            }
-        }
-
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(shareUrl);
-            toast.success('Report link copied to clipboard!');
-        }
-    };
 
     const mapMarker: MapMarkerItem = {
         id: pothole.id,
@@ -180,33 +126,29 @@ export function PotholeDetailView({
                         </span>
                     </div>
 
-                    {/* Action Bar in Header */}
-                    <div className="flex items-center gap-2">
-                        <Button
-                            type="button"
+                    {/* Social Action Bar: Upvote, Follow, Share, Open Page */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <UpvoteButton
+                            potholeId={pothole.id}
+                            initialVotesCount={pothole.votes?.length || 0}
                             size="sm"
-                            variant={hasVoted ? 'default' : 'outline'}
-                            onClick={handleUpvote}
-                            disabled={isVoting}
-                            className="gap-1.5 h-8 text-xs font-medium"
-                        >
-                            <ThumbsUp className="size-3.5" />
-                            <span>{votesCount}</span>
-                            <span className="hidden sm:inline">
-                                {votesCount === 1 ? 'Confirmation' : 'Confirmations'}
-                            </span>
-                        </Button>
+                        />
 
-                        <Button
-                            type="button"
+                        <FollowButton
+                            potholeId={pothole.id}
                             size="sm"
-                            variant="outline"
-                            onClick={handleShare}
-                            className="gap-1.5 h-8 text-xs font-medium"
-                        >
-                            <Share2 className="size-3.5" />
-                            <span className="hidden sm:inline">Share</span>
-                        </Button>
+                        />
+
+                        <ShareDialog
+                            pothole={{
+                                id: pothole.id,
+                                title: pothole.title,
+                                city: pothole.city,
+                                severity: pothole.severity,
+                                status: pothole.status,
+                            }}
+                            size="sm"
+                        />
 
                         {layout === 'modal' && (
                             <Button asChild size="sm" variant="secondary" className="gap-1 h-8 text-xs">
@@ -321,35 +263,12 @@ export function PotholeDetailView({
                 </CardContent>
             </Card>
 
-            {/* Community Engagement Preview */}
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-primary/10 p-2.5 text-primary">
-                        <MessageSquare className="size-4" />
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-xs text-foreground">
-                            Civic Discussion & Community Updates
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                            {pothole.comments?.length || 0} civic{' '}
-                            {pothole.comments?.length === 1 ? 'comment' : 'comments'} logged on this road segment.
-                        </p>
-                    </div>
-                </div>
-
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                        toast.info('Community comments thread is actively recorded and notified to followers.');
-                    }}
-                    className="text-xs h-8"
-                >
-                    View Discussions ({pothole.comments?.length || 0})
-                </Button>
-            </div>
+            {/* Civic Discussion & Community Updates */}
+            <CommentThread
+                potholeId={pothole.id}
+                initialComments={pothole.comments || []}
+                reporterId={pothole.user?.id}
+            />
         </div>
     );
 }
