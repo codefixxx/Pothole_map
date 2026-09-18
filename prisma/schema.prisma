@@ -52,6 +52,7 @@ model User {
   assignmentsReceived ReportAssignment[]    @relation("AssignedOfficer")
   notifications       Notification[]
   followedPotholes    ReportFollower[]
+  auditLogs           AuditLog[]
 
   @@map("user")
 }
@@ -365,5 +366,23 @@ model ReportFollower {
   @@index([userId])
   @@map("report_follower")
 }
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
 
 

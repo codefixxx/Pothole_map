@@ -10,6 +10,7 @@ import { validateStatusTransition } from '@/src/lib/state-machine';
 import { enqueuePotholeProcessing } from '@/src/lib/queue';
 import { broadcastRealtimeEvent } from '@/src/lib/events';
 import { invalidateCacheKeys } from '@/src/lib/cache';
+import { logAuditAction } from './audit.service';
 
 export async function createPothole(data: CreatePotholeInput) {
     const user = await db.user.findUnique({

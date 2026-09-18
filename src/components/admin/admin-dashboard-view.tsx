@@ -10,6 +10,7 @@ import { AdminStatsOverview, AdminStats } from './admin-stats-overview';
 import { MunicipalityManager, MunicipalityItem } from './municipality-manager';
 import { MemberRoleManager, StaffMember } from './member-role-manager';
 import { JurisdictionVisualizer, JurisdictionItem } from './jurisdiction-visualizer';
+import { AuditLogViewer } from './audit-log-viewer';
 import {
     ShieldCheck,
     Building2,
@@ -18,6 +19,7 @@ import {
     Activity,
     RefreshCw,
     LogOut,
+    ShieldAlert,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PageTransition } from '@/src/components/motion';
@@ -63,9 +65,9 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
     }, [fetchData]);
 
     return (
-        <PageTransition className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
-            {/* Top Navigation Bar Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
+        <PageTransition className="container mx-auto space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl">
+            {/* Top Dashboard Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-6">
                 <div className="flex items-center gap-3">
                     <div className="rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">
                         <ShieldCheck className="size-6" />
@@ -94,7 +96,7 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
 
             {/* Dashboard Navigation Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full max-w-2xl">
+                <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full max-w-4xl">
                     <TabsTrigger value="overview" className="gap-2 text-xs">
                         <Activity className="size-3.5" />
                         Overview
@@ -109,7 +111,11 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
                     </TabsTrigger>
                     <TabsTrigger value="jurisdictions" className="gap-2 text-xs">
                         <Globe className="size-3.5" />
-                        Jurisdiction Map
+                        Jurisdictions
+                    </TabsTrigger>
+                    <TabsTrigger value="audit" className="gap-2 text-xs">
+                        <ShieldAlert className="size-3.5" />
+                        Audit Logs
                     </TabsTrigger>
                 </TabsList>
 
@@ -140,6 +146,10 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
                         onRefresh={fetchData}
                         isLoading={isLoading}
                     />
+                </TabsContent>
+
+                <TabsContent value="audit">
+                    <AuditLogViewer />
                 </TabsContent>
             </Tabs>
         </PageTransition>
