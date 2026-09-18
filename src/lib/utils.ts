@@ -17,8 +17,9 @@ export const normalizeName = (name: string) => {
   return name
     .trim()
     .toLowerCase()
-     .replace(/[^a-zA-Z\s'-]/g, "")
-    .split(/\s+/) // handles multiple spaces
+    .replace(/[^a-zA-Z\s'-]/g, "")
+    .split(/\s+/)
+    .filter(Boolean) // handles empty tokens left by non-alpha replacement
     .map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     )
