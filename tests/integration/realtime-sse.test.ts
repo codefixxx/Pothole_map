@@ -32,29 +32,29 @@ export async function runRealtimeSseIntegrationTests() {
     }
 
     // 2. Cache Hit & Invalidation
-    let fetchCount = 0;
+    const counter = { count: 0 };
     const testFetcher = async () => {
-        fetchCount++;
+        counter.count++;
         return [{ id: 'sse-p1', status: 'PENDING' }];
     };
 
     const c1 = await getCachedOrFetch('test:sse:query', 10, testFetcher);
     const c2 = await getCachedOrFetch('test:sse:query', 10, testFetcher);
 
-    if (fetchCount === 1 && c1.length === 1 && c2.length === 1) {
+    if (counter.count === 1 && c1.length === 1 && c2.length === 1) {
         console.log('  ✅ Query Response Cache Hit (Memory/Redis): PASSED');
     } else {
-        console.error('❌ Query Response Cache Hit: FAILED', fetchCount);
+        console.error('❌ Query Response Cache Hit: FAILED', counter.count);
         return false;
     }
 
     await invalidateCacheKeys(['test:sse:query']);
     const c3 = await getCachedOrFetch('test:sse:query', 10, testFetcher);
 
-    if (fetchCount === 2) {
+    if ((counter.count as number) === 2) {
         console.log('  ✅ Cache Invalidation on Event Trigger: PASSED');
     } else {
-        console.error('❌ Cache Invalidation: FAILED', fetchCount);
+        console.error('❌ Cache Invalidation: FAILED', counter.count);
         return false;
     }
 

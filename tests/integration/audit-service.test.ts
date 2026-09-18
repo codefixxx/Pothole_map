@@ -40,7 +40,7 @@ export async function runAuditServiceIntegrationTests() {
     }
 
     // 3. Clean up test record
-    await db.auditLog.delete({ where: { id: entry.id } });
+    await (db as any).auditLog.delete({ where: { id: entry.id } });
     console.log('  ✅ Audit Log Record Cleanup: PASSED');
 
     console.log('✅ Audit Service Integration Suite: ALL 3 TESTS PASSED');
