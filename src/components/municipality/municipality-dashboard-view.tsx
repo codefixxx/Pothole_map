@@ -39,6 +39,7 @@ import {
     Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageTransition } from '@/src/components/motion';
 
 interface MunicipalityDashboardViewProps {
     initialMunicipality?: MunicipalityInfo;
@@ -277,7 +278,7 @@ export function MunicipalityDashboardView({
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
+        <PageTransition className="min-h-screen bg-background flex flex-col">
             {/* Header with Municipality Identity & KPI Stats */}
             <MunicipalityHeader
                 municipality={municipality}
@@ -560,6 +561,6 @@ export function MunicipalityDashboardView({
                 onOpenChange={setComparisonModalOpen}
                 onResolved={handleDuplicateResolved}
             />
-        </div>
+        </PageTransition>
     );
 }

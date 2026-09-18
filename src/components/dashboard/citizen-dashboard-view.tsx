@@ -52,6 +52,8 @@ interface CitizenDashboardViewProps {
     initialData?: CitizenDashboardData;
 }
 
+import { PageTransition } from '@/src/components/motion';
+
 export function CitizenDashboardView({ initialData }: CitizenDashboardViewProps) {
     const [data, setData] = useState<CitizenDashboardData | null>(initialData || null);
     const [isLoading, setIsLoading] = useState<boolean>(!initialData);
@@ -151,7 +153,7 @@ export function CitizenDashboardView({ initialData }: CitizenDashboardViewProps)
         .slice(0, 2);
 
     return (
-        <div className="space-y-8 pb-16">
+        <PageTransition className="space-y-8 pb-16">
             {/* Demo Data Notice Banner */}
             {data.isDemoData && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4 text-xs flex items-center justify-between gap-3">
@@ -419,6 +421,6 @@ export function CitizenDashboardView({ initialData }: CitizenDashboardViewProps)
                 open={isReportOpen}
                 onOpenChange={setIsReportOpen}
             />
-        </div>
+        </PageTransition>
     );
 }
