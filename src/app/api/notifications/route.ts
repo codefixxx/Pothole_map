@@ -45,7 +45,12 @@ export const GET = asyncHandler(async (req: Request) => {
     const demoMode = url.searchParams.get('demo') === 'true';
 
     if (!session && !demoMode) {
-        throw new AppError('Unauthorized', 401);
+        return Response.json({
+            success: true,
+            data: [],
+            unreadCount: 0,
+            isGuest: true,
+        });
     }
 
     if (!session && demoMode) {
@@ -55,6 +60,7 @@ export const GET = asyncHandler(async (req: Request) => {
             data: DEMO_NOTIFICATIONS,
             unreadCount,
             isDemo: true,
+            isGuest: true,
         });
     }
 

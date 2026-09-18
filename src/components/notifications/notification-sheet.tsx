@@ -17,12 +17,14 @@ import {
     NotificationItem,
     NotificationData,
 } from './notification-item';
+import Link from 'next/link';
 import {
     Bell,
     CheckCheck,
     RefreshCw,
     Inbox,
     Sparkles,
+    LogIn,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -43,18 +45,21 @@ export function NotificationSheet({
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [markingAll, setMarkingAll] = useState<boolean>(false);
     const [markingId, setMarkingId] = useState<string | null>(null);
+    const [isGuest, setIsGuest] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
 
     const fetchNotifications = useCallback(async (isBackground = false) => {
         if (!isBackground) setLoading(true);
         try {
-            const res = await fetch('/api/notifications?demo=true', {
+            const isDemoParam = typeof window !== 'undefined' && window.location.search.includes('demo=true');
+            const res = await fetch(`/api/notifications${isDemoParam ? '?demo=true' : ''}`, {
                 cache: 'no-store',
             });
             if (!res.ok) throw new Error('Failed to fetch notifications');
             const data = await res.json();
             if (data?.data) {
                 setNotifications(data.data);
+                setIsGuest(!!data.isGuest && !data.isDemo);
                 const unread = data.data.filter((n: NotificationData) => !n.read).length;
                 onUnreadCountChange?.(unread);
             }
@@ -249,22 +254,36 @@ export function NotificationSheet({
                     ) : displayedNotifications.length === 0 ? (
                         <div className="flex h-full min-h-[320px] flex-col items-center justify-center p-6 text-center">
                             <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/50 border border-border/60 mb-3 text-muted-foreground">
-                                {activeTab === 'unread' ? (
+                                {isGuest ? (
+                                    <LogIn className="size-6 text-primary" />
+                                ) : activeTab === 'unread' ? (
                                     <Sparkles className="size-6 text-amber-500" />
                                 ) : (
                                     <Inbox className="size-6 opacity-60" />
                                 )}
                             </div>
                             <h4 className="text-sm font-semibold text-foreground">
-                                {activeTab === 'unread'
-                                    ? "You're all caught up!"
-                                    : 'No notifications found'}
+                                {isGuest
+                                    ? 'Sign in for Notifications'
+                                    : activeTab === 'unread'
+                                      ? "You're all caught up!"
+                                      : 'No notifications found'}
                             </h4>
-                            <p className="text-xs text-muted-foreground mt-1 max-w-[240px]">
-                                {activeTab === 'unread'
-                                    ? 'All civic hazard alerts and discussions have been acknowledged.'
-                                    : 'Follow reports or report road hazards to receive direct dispatch notifications.'}
+                            <p className="text-xs text-muted-foreground mt-1 max-w-[240px] leading-relaxed">
+                                {isGuest
+                                    ? 'Sign in to receive real-time notifications about potholes you report, follow, or upvote.'
+                                    : activeTab === 'unread'
+                                      ? 'All civic hazard alerts and discussions have been acknowledged.'
+                                      : 'Follow reports or report road hazards to receive direct dispatch notifications.'}
                             </p>
+                            {isGuest && (
+                                <Button asChild size="sm" className="mt-4 gap-1.5 text-xs">
+                                    <Link href="/auth/login">
+                                        <LogIn className="size-3.5" />
+                                        <span>Sign In Now</span>
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-2.5">

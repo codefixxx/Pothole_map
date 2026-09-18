@@ -20,7 +20,8 @@ export function NotificationBell({ className, showLabel = false }: NotificationB
         let isMounted = true;
         const checkUnread = async () => {
             try {
-                const res = await fetch('/api/notifications?demo=true', {
+                const isDemoParam = typeof window !== 'undefined' && window.location.search.includes('demo=true');
+                const res = await fetch(`/api/notifications${isDemoParam ? '?demo=true' : ''}`, {
                     cache: 'no-store',
                 });
                 if (!res.ok) return;
