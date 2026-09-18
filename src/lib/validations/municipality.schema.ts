@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 export const createMunicipalitySchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+    code: z.string().min(2).max(20).optional(),
+    contactEmail: z.string().email('Invalid email address format').optional(),
+    contactPhone: z.string().optional(),
 });
 
 export const createJurisdictionSchema = z.object({
@@ -20,6 +23,8 @@ export const createMunicipalityMemberSchema = z.object({
     municipalityId: z.string(),
     role: z.enum(['OFFICER', 'MANAGER']),
 });
+
+export const addMemberSchema = createMunicipalityMemberSchema;
 
 export type CreateMunicipalityInput = z.infer<typeof createMunicipalitySchema>;
 export type CreateJurisdictionInput = z.infer<typeof createJurisdictionSchema>;

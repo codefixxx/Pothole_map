@@ -2,6 +2,27 @@ import { db } from './db';
 import { ForbiddenError, NotFoundError } from './errors';
 
 /**
+ * Checks if a given user object has Super Admin (ADMIN) privileges.
+ */
+export function isSuperAdmin(user: { role: string } | null | undefined): boolean {
+    return user?.role === 'ADMIN';
+}
+
+/**
+ * Checks if a member has officer level access or higher.
+ */
+export function isMunicipalityOfficer(member: { role: string } | null | undefined): boolean {
+    return member?.role === 'OFFICER' || member?.role === 'MANAGER';
+}
+
+/**
+ * Checks if a member has manager level access.
+ */
+export function isMunicipalityManager(member: { role: string } | null | undefined): boolean {
+    return member?.role === 'MANAGER';
+}
+
+/**
  * Fetches a user's municipality membership details.
  */
 export async function getMunicipalityMember(userId: string) {
