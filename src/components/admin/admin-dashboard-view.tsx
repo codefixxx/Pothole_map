@@ -24,128 +24,9 @@ import { PageTransition } from '@/src/components/motion';
 
 interface AdminDashboardViewProps {
     userName?: string;
-    isDemo?: boolean;
 }
 
-// Fallback Mock Data for Demo mode or initial render
-const MOCK_STATS: AdminStats = {
-    totalPotholes: 42,
-    pendingCount: 12,
-    verifiedCount: 15,
-    ongoingCount: 8,
-    fixedCount: 5,
-    rejectedCount: 2,
-    escalatedCount: 3,
-    totalMunicipalities: 4,
-    totalUsers: 128,
-    totalStaff: 18,
-    jurisdictionCount: 4,
-    resolutionRate: 12,
-};
-
-const MOCK_MUNICIPALITIES: MunicipalityItem[] = [
-    {
-        id: 'muni_mumbai_01',
-        name: 'Brihanmumbai Municipal Corporation (BMC)',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        memberCount: 8,
-        potholeCount: 24,
-        jurisdiction: {
-            id: 'jur_mumbai_01',
-            name: 'BMC Boundary',
-            boundary: [
-                [
-                    [72.82, 18.92],
-                    [72.95, 18.92],
-                    [72.95, 19.18],
-                    [72.82, 19.18],
-                    [72.82, 18.92],
-                ],
-            ],
-        },
-    },
-    {
-        id: 'muni_thane_02',
-        name: 'Thane Municipal Corporation (TMC)',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        memberCount: 5,
-        potholeCount: 12,
-        jurisdiction: {
-            id: 'jur_thane_02',
-            name: 'TMC Boundary',
-            boundary: [
-                [
-                    [72.95, 19.18],
-                    [73.05, 19.18],
-                    [73.05, 19.25],
-                    [72.95, 19.25],
-                    [72.95, 19.18],
-                ],
-            ],
-        },
-    },
-];
-
-const MOCK_MEMBERS: StaffMember[] = [
-    {
-        id: 'mem_01',
-        userId: 'u_01',
-        municipalityId: 'muni_mumbai_01',
-        role: 'MANAGER',
-        createdAt: new Date().toISOString(),
-        user: {
-            id: 'u_01',
-            name: 'Rajesh Kumar',
-            email: 'rajesh.kumar@bmc.gov.in',
-            role: 'USER',
-            image: null,
-        },
-        municipality: {
-            id: 'muni_mumbai_01',
-            name: 'Brihanmumbai Municipal Corporation (BMC)',
-        },
-    },
-    {
-        id: 'mem_02',
-        userId: 'u_02',
-        municipalityId: 'muni_mumbai_01',
-        role: 'OFFICER',
-        createdAt: new Date().toISOString(),
-        user: {
-            id: 'u_02',
-            name: 'Priya Sharma',
-            email: 'priya.sharma@bmc.gov.in',
-            role: 'USER',
-            image: null,
-        },
-        municipality: {
-            id: 'muni_mumbai_01',
-            name: 'Brihanmumbai Municipal Corporation (BMC)',
-        },
-    },
-];
-
-const MOCK_JURISDICTIONS: JurisdictionItem[] = [
-    {
-        id: 'jur_mumbai_01',
-        name: 'BMC Zone 1 Jurisdiction',
-        municipalityId: 'muni_mumbai_01',
-        municipalityName: 'Brihanmumbai Municipal Corporation (BMC)',
-        boundary: [
-            [
-                [72.82, 18.92],
-                [72.95, 18.92],
-                [72.95, 19.18],
-                [72.82, 19.18],
-                [72.82, 18.92],
-            ],
-        ],
-    },
-];
-
-export function AdminDashboardView({ userName = 'Super Admin', isDemo = false }: AdminDashboardViewProps) {
+export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardViewProps) {
     const [activeTab, setActiveTab] = useState('overview');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -166,28 +47,16 @@ export function AdminDashboardView({ userName = 'Super Admin', isDemo = false }:
             ]);
 
             if (statsRes?.success) setStats(statsRes.data);
-            else if (isDemo) setStats(MOCK_STATS);
-
             if (muniRes?.success) setMunicipalities(muniRes.data);
-            else if (isDemo) setMunicipalities(MOCK_MUNICIPALITIES);
-
             if (memRes?.success) setMembers(memRes.data);
-            else if (isDemo) setMembers(MOCK_MEMBERS);
-
             if (jurRes?.success) setJurisdictions(jurRes.data);
-            else if (isDemo) setJurisdictions(MOCK_JURISDICTIONS);
         } catch (err) {
             console.error('Failed to load admin data:', err);
-            if (isDemo) {
-                setStats(MOCK_STATS);
-                setMunicipalities(MOCK_MUNICIPALITIES);
-                setMembers(MOCK_MEMBERS);
-                setJurisdictions(MOCK_JURISDICTIONS);
-            }
+            toast.error('Failed to load admin dashboard data');
         } finally {
             setIsLoading(false);
         }
-    }, [isDemo]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -207,11 +76,6 @@ export function AdminDashboardView({ userName = 'Super Admin', isDemo = false }:
                             <Badge variant="default" className="text-[10px] bg-primary">
                                 Platform Control
                             </Badge>
-                            {isDemo && (
-                                <Badge variant="secondary" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/20">
-                                    Demo Mode
-                                </Badge>
-                            )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             Welcome back, <strong className="text-foreground">{userName}</strong>. System-wide jurisdiction & member management.

@@ -8,21 +8,14 @@ export const metadata = {
     description: 'System-wide municipality CRUD, member role assignments, GeoJSON jurisdiction boundary manager, and platform metrics.',
 };
 
-export default async function AdminDashboardPage({
-    searchParams,
-}: {
-    searchParams?: Promise<{ demo?: string }> | { demo?: string };
-}) {
-    const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : {};
-    const isDemo = resolvedSearchParams?.demo === 'true';
-
+export default async function AdminDashboardPage() {
     const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session && !isDemo) {
+    if (!session) {
         redirect('/auth/login?callbackUrl=/admin/dashboard');
     }
 
-    if (session && session.user.role !== 'ADMIN' && !isDemo) {
+    if (session.user.role !== 'ADMIN') {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center">
                 <div className="rounded-full bg-red-500/10 p-4 text-red-500 mb-4">
@@ -40,7 +33,7 @@ export default async function AdminDashboardPage({
         );
     }
 
-    const userName = session?.user?.name || (isDemo ? 'Super Admin Demo' : 'Administrator');
+    const userName = session.user.name || session.user.email || 'Administrator';
 
-    return <AdminDashboardView userName={userName} isDemo={isDemo || !session} />;
+    return <AdminDashboardView userName={userName} />;
 }

@@ -8,7 +8,6 @@ import { DropdownMenuAvatar } from '@/src/components/layout/dropdown-menu-avatar
 import { CitizenDashboardView } from '@/src/components/dashboard';
 import { NotificationBell } from '@/src/components/notifications';
 import { Button } from '@/src/components/ui/button';
-import { Badge } from '@/src/components/ui/badge';
 import {
     MapPin,
     ChevronRight,
@@ -23,26 +22,13 @@ export const metadata = {
     description: 'Track your reported road hazards, confirmations, followed repairs, and personal civic impact.',
 };
 
-export default async function DashboardPage({
-    searchParams,
-}: {
-    searchParams?: Promise<{ demo?: string }> | { demo?: string };
-}) {
-    const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : {};
-    const isDemo = resolvedSearchParams?.demo === 'true';
-
+export default async function DashboardPage() {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session && !isDemo) {
+    if (!session) {
         redirect('/auth/login?callbackUrl=/dashboard');
     }
 
-    const currentUser = session?.user || {
-        id: 'demo-citizen-1',
-        name: 'Aarav Sharma',
-        email: 'aarav.sharma@example.com',
-        role: 'USER',
-        image: null,
-    };
+    const currentUser = session.user;
 
     return (
         <div className="min-h-screen bg-background flex flex-col">

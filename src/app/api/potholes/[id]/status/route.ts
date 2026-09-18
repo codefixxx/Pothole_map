@@ -13,6 +13,11 @@ export const PATCH = asyncHandler(
             throw new AppError('Pothole ID is required', 400);
         }
 
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session) {
+            throw new AppError('Unauthorized', 401);
+        }
+
         const body = await req.json();
         const { status, reason } = body;
         if (!status) {
@@ -22,25 +27,6 @@ export const PATCH = asyncHandler(
         const validStatuses = ['PENDING', 'VERIFIED', 'ONGOING', 'FIXED', 'REJECTED'];
         if (!validStatuses.includes(status)) {
             throw new AppError('Invalid status', 400);
-        }
-
-        // Support demo testing without requiring active db records
-        if (id.startsWith('demo-') || id.startsWith('sample-')) {
-            return Response.json({
-                success: true,
-                data: {
-                    id,
-                    status,
-                    reason: reason || null,
-                    updatedAt: new Date().toISOString(),
-                },
-                message: `Status transitioned to ${status}`,
-            });
-        }
-
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session) {
-            throw new AppError('Unauthorized', 401);
         }
 
         const updated = await potholeService.updatePotholeStatus(

@@ -64,9 +64,9 @@ export function MunicipalityDashboardView({
 }: MunicipalityDashboardViewProps) {
     const [municipality, setMunicipality] = useState<MunicipalityInfo>(
         initialMunicipality || {
-            id: 'demo-munc-ndmc',
-            name: 'New Delhi Municipal Council (NDMC)',
-            code: 'NDMC-ZONE-1',
+            id: '',
+            name: 'Municipal Jurisdiction',
+            code: '',
         }
     );
     const [jurisdiction, setJurisdiction] = useState<MunicipalJurisdiction | null>(
@@ -106,7 +106,6 @@ export function MunicipalityDashboardView({
         setLoadingDuplicates(true);
         try {
             const queryParams = new URLSearchParams();
-            if (isDemo) queryParams.set('demo', 'true');
             queryParams.set('status', 'POTENTIAL');
 
             const res = await fetch(`/api/municipality/duplicates?${queryParams.toString()}`);
@@ -121,14 +120,13 @@ export function MunicipalityDashboardView({
         } finally {
             setLoadingDuplicates(false);
         }
-    }, [isDemo]);
+    }, []);
 
     // Fetch dashboard data from API
     const fetchDashboardData = useCallback(async (isSilent = false) => {
         if (!isSilent) setLoading(true);
         try {
             const queryParams = new URLSearchParams();
-            if (isDemo) queryParams.set('demo', 'true');
             if (sortBy) queryParams.set('sortBy', sortBy);
 
             const res = await fetch(`/api/municipality/dashboard?${queryParams.toString()}`);

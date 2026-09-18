@@ -70,8 +70,7 @@ export function CitizenDashboardView({ initialData }: CitizenDashboardViewProps)
     const fetchActivity = async (showToast = false) => {
         try {
             if (showToast) setIsRefreshing(true);
-            const isDemoQuery = typeof window !== 'undefined' && window.location.search.includes('demo=true');
-            const res = await fetch(`/api/user/activity${isDemoQuery ? '?demo=true' : ''}`);
+            const res = await fetch('/api/user/activity');
             if (!res.ok) throw new Error('Failed to load civic activity');
             const json = await res.json();
             if (json.success && json.data) {
@@ -154,26 +153,6 @@ export function CitizenDashboardView({ initialData }: CitizenDashboardViewProps)
 
     return (
         <PageTransition className="space-y-8 pb-16">
-            {/* Demo Data Notice Banner */}
-            {data.isDemoData && (
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4 text-xs flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-foreground/90">
-                        <Sparkles className="size-4 text-primary shrink-0" />
-                        <span>
-                            <strong>Civic Activity Preview:</strong> Showing sample road hazard reports to preview your dashboard. File a hazard or confirm reports on the live map to populate your records!
-                        </span>
-                    </div>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsReportOpen(true)}
-                        className="h-7 text-xs shrink-0 font-medium"
-                    >
-                        Report a Hazard
-                    </Button>
-                </div>
-            )}
-
             {/* Profile Welcome Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/70 bg-card/60 p-5 sm:p-6 backdrop-blur-md shadow-xs">
                 <div className="flex items-center gap-4">

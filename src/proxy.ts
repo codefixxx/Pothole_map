@@ -8,18 +8,14 @@ export async function proxy(request: NextRequest) {
     const sessionCookie = getSessionCookie(request);
     const res = NextResponse.next();
     const isLoggedIn = sessionCookie ? true : false;
-    const isOnProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
-    const isOnAuthRouted = nextUrl.pathname.startsWith('/auth');
+    const isOnProtectedRoute = protectedRoutes.some((route) => nextUrl.pathname.startsWith(route));
+    const isOnAuthRoute = nextUrl.pathname.startsWith('/auth');
 
-    const isDemo = nextUrl.searchParams.get('demo') === 'true';
-
-    if (isOnProtectedRoute && !isLoggedIn && !isDemo) {
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+    if (isOnProtectedRoute && !isLoggedIn) {
+        return NextResponse.redirect(new URL(`/auth/login?callbackUrl=${encodeURIComponent(nextUrl.pathname)}`, request.url));
     }
-    // THIS IS NOT SECURE!
-    // This is the recommended approach to optimistically redirect users
-    // We recommend handling auth checks in each page/route
-    if (isOnAuthRouted && isLoggedIn) {
+
+    if (isOnAuthRoute && isLoggedIn) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return res;

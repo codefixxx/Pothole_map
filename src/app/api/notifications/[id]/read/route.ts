@@ -12,15 +12,6 @@ export const PATCH = asyncHandler(async (req, { params }) => {
         throw new AppError('Notification ID is required', 400);
     }
 
-    // Support demo notification ids for interactive testing without active DB sessions
-    if (id.startsWith('demo-')) {
-        return Response.json({
-            success: true,
-            data: { id, read: true },
-            message: 'Notification marked as read.',
-        });
-    }
-
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) {
         throw new AppError('Unauthorized', 401);

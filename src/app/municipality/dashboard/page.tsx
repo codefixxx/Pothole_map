@@ -9,39 +9,27 @@ export const metadata = {
     description: 'Jurisdictional road hazard triage, automated PostGIS boundary routing, state machine transitions, and team dispatch.',
 };
 
-export default async function MunicipalityDashboardPage({
-    searchParams,
-}: {
-    searchParams?: Promise<{ demo?: string }> | { demo?: string };
-}) {
-    const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : {};
-    const isDemo = resolvedSearchParams?.demo === 'true';
-
+export default async function MunicipalityDashboardPage() {
     const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session && !isDemo) {
+    if (!session) {
         redirect('/auth/login?callbackUrl=/municipality/dashboard');
     }
 
-    // Resolve user's municipality membership or fallback for demo
-    let member = null;
-    if (session) {
-        member = await getMunicipalityMember(session.user.id);
-        if (!member && session.user.role !== 'ADMIN' && !isDemo) {
-            redirect('/dashboard?error=unauthorized_municipality');
-        }
+    const member = await getMunicipalityMember(session.user.id);
+    if (!member && session.user.role !== 'ADMIN') {
+        redirect('/dashboard?error=unauthorized_municipality');
     }
 
-    const userRole = member?.role || (session?.user?.role === 'ADMIN' ? 'ADMIN' : 'MANAGER');
-    const userName = session?.user?.name || (isDemo ? 'Senior Inspector Rajesh Kumar' : 'Municipal Officer');
-    const userImage = session?.user?.image || null;
+    const userRole = member?.role || (session.user.role === 'ADMIN' ? 'ADMIN' : 'MANAGER');
+    const userName = session.user.name || session.user.email || 'Municipal Officer';
+    const userImage = session.user.image || null;
 
     return (
         <MunicipalityDashboardView
             userRole={userRole}
             userName={userName}
             userImage={userImage}
-            isDemo={isDemo || !session}
         />
     );
 }

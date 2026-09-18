@@ -13,33 +13,15 @@ export const POST = asyncHandler(
             throw new AppError('Pothole ID is required', 400);
         }
 
-        const body = await req.json();
-        const { officerId, officerName } = body;
-        if (!officerId) {
-            throw new AppError('Missing officerId in request body', 400);
-        }
-
-        // Support demo testing without requiring active db records
-        if (id.startsWith('demo-') || id.startsWith('sample-')) {
-            return Response.json({
-                success: true,
-                data: {
-                    id,
-                    assignedOfficerId: officerId,
-                    assignedOfficer: {
-                        id: officerId,
-                        name: officerName || 'Inspector Assigned',
-                    },
-                    status: 'ONGOING',
-                    updatedAt: new Date().toISOString(),
-                },
-                message: `Assigned to ${officerName || 'Officer'} successfully.`,
-            });
-        }
-
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session) {
             throw new AppError('Unauthorized', 401);
+        }
+
+        const body = await req.json();
+        const { officerId } = body;
+        if (!officerId) {
+            throw new AppError('Missing officerId in request body', 400);
         }
 
         const updated = await potholeService.assignPothole({
