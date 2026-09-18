@@ -64,29 +64,31 @@ export async function create(data: CreatePotholeInput & { municipalityId?: strin
     }) as any; // Cast to bypass strict type inference variance in transaction wrapper
 }
 
+import { getCachedOrFetch } from '@/src/lib/cache';
+
 export async function findAll(
     page = 1,
     limit = 20,
 ) {
-
     limit = Math.min(limit, 50);
+    const skip = (page - 1) * limit;
+    const cacheKey = `potholes:all:page_${page}:limit_${limit}`;
 
-    const skip =
-        (page - 1) * limit;
+    return getCachedOrFetch(cacheKey, 60, async () => {
+        return db.pothole.findMany({
+            skip,
+            take: limit,
 
-    return db.pothole.findMany({
-        skip,
-        take: limit,
+            orderBy: {
+                createdAt: 'desc',
+            },
 
-        orderBy: {
-            createdAt: 'desc',
-        },
-
-        include: {
-            reportImage: true,
-            votes: true,
-            comments: true,
-        },
+            include: {
+                reportImage: true,
+                votes: true,
+                comments: true,
+            },
+        });
     });
 }
 

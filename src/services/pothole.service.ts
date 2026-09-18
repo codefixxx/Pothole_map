@@ -8,6 +8,8 @@ import { getOrCreateMunicipalityFromOSM } from './municipality.service';
 import { db } from '@/src/lib/db';
 import { validateStatusTransition } from '@/src/lib/state-machine';
 import { enqueuePotholeProcessing } from '@/src/lib/queue';
+import { broadcastRealtimeEvent } from '@/src/lib/events';
+import { invalidateCacheKeys } from '@/src/lib/cache';
 
 export async function createPothole(data: CreatePotholeInput) {
     const user = await db.user.findUnique({
@@ -50,6 +52,9 @@ export async function createPothole(data: CreatePotholeInput) {
     } catch (error) {
         console.error(`Failed to enqueue background processing for pothole ${newPothole.id}:`, error);
     }
+
+    broadcastRealtimeEvent('POTHOLE_CREATED', { pothole: newPothole });
+    void invalidateCacheKeys(['potholes:all*']);
 
     return newPothole;
 }
@@ -184,6 +189,15 @@ export async function transitionPotholeStatus({
     if (statusMessages[newStatus]) {
         void notifyFollowersOfStatusChange(potholeId, titleMap[newStatus], statusMessages[newStatus]);
     }
+
+    broadcastRealtimeEvent('STATUS_UPDATED', {
+        potholeId,
+        oldStatus,
+        newStatus,
+        municipalityId: result.municipalityId,
+        pothole: result,
+    });
+    void invalidateCacheKeys(['potholes:all*']);
 
     return result;
 }
@@ -327,6 +341,15 @@ export async function assignPothole({
         void sendOngoingNotification(pothole.userId, potholeId);
         void notifyFollowersOfStatusChange(potholeId, 'Work Started on Followed Pothole', 'Work has started on the pothole report you follow.');
     }
+
+    broadcastRealtimeEvent('ASSIGNMENT_UPDATED', {
+        potholeId,
+        officerId,
+        status: newStatus,
+        municipalityId: result.municipalityId,
+        pothole: result,
+    });
+    void invalidateCacheKeys(['potholes:all*']);
 
     return result;
 }

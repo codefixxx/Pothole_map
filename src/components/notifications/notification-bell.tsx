@@ -5,6 +5,7 @@ import { Bell } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { cn } from '@/src/lib/utils';
 import { NotificationSheet } from './notification-sheet';
+import { useRealtimeStream, RealtimeEvent } from '@/src/hooks/use-realtime';
 
 interface NotificationBellProps {
     className?: string;
@@ -15,34 +16,37 @@ export function NotificationBell({ className, showLabel = false }: NotificationB
     const [open, setOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState<number>(0);
 
+    const checkUnread = React.useCallback(async () => {
+        try {
+            const isDemoParam = typeof window !== 'undefined' && window.location.search.includes('demo=true');
+            const res = await fetch(`/api/notifications${isDemoParam ? '?demo=true' : ''}`, {
+                cache: 'no-store',
+            });
+            if (!res.ok) return;
+            const json = await res.json();
+            if (typeof json?.unreadCount === 'number') {
+                setUnreadCount(json.unreadCount);
+            }
+        } catch {
+            // Ignore background errors
+        }
+    }, []);
+
+    // Listen to real-time events to refresh notifications
+    const handleRealtimeEvent = React.useCallback((event: RealtimeEvent) => {
+        if (event.type === 'STATUS_UPDATED' || event.type === 'ASSIGNMENT_UPDATED' || event.type === 'POTHOLE_CREATED') {
+            checkUnread();
+        }
+    }, [checkUnread]);
+
+    useRealtimeStream(handleRealtimeEvent);
+
     // Initial check for unread count
     useEffect(() => {
-        let isMounted = true;
-        const checkUnread = async () => {
-            try {
-                const isDemoParam = typeof window !== 'undefined' && window.location.search.includes('demo=true');
-                const res = await fetch(`/api/notifications${isDemoParam ? '?demo=true' : ''}`, {
-                    cache: 'no-store',
-                });
-                if (!res.ok) return;
-                const json = await res.json();
-                if (isMounted && typeof json?.unreadCount === 'number') {
-                    setUnreadCount(json.unreadCount);
-                }
-            } catch {
-                // Ignore background polling errors
-            }
-        };
-
         checkUnread();
-
-        // Optional gentle poll every 60 seconds
         const interval = setInterval(checkUnread, 60000);
-        return () => {
-            isMounted = false;
-            clearInterval(interval);
-        };
-    }, []);
+        return () => clearInterval(interval);
+    }, [checkUnread]);
 
     return (
         <>
