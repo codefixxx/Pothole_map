@@ -20,6 +20,7 @@ import {
     LogOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageTransition } from '@/src/components/motion';
 
 interface AdminDashboardViewProps {
     userName?: string;
@@ -193,7 +194,7 @@ export function AdminDashboardView({ userName = 'Super Admin', isDemo = false }:
     }, [fetchData]);
 
     return (
-        <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
+        <PageTransition className="min-h-screen bg-background p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto">
             {/* Top Navigation Bar Header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b pb-4">
                 <div className="flex items-center gap-3">
@@ -277,6 +278,6 @@ export function AdminDashboardView({ userName = 'Super Admin', isDemo = false }:
                     />
                 </TabsContent>
             </Tabs>
-        </div>
+        </PageTransition>
     );
 }
