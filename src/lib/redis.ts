@@ -16,6 +16,9 @@ export const getRedisConnection = () => {
         return global.redisConnection;
     }
     const conn = new Redis(redisUrl, redisConnectionOptions);
+    conn.on('error', (err) => {
+        // Silently catch Redis errors in environments where Redis server is not running
+    });
     if (process.env.NODE_ENV !== 'production') {
         global.redisConnection = conn;
     }

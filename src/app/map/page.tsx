@@ -14,6 +14,7 @@ import { PotholeDetailModal } from '@/src/components/pothole-detail';
 import { UpvoteButton, ShareDialog } from '@/src/components/social';
 import { NotificationBell } from '@/src/components/notifications';
 import { useSession } from '@/src/lib/auth-client';
+import { useRealtimeStream, RealtimeEvent } from '@/src/hooks/use-realtime';
 import { toast } from 'sonner';
 import {
     MapPin,
@@ -192,6 +193,45 @@ export default function MapPage() {
 
         fetchReports();
     }, []);
+
+    // Listen for live Server-Sent Events (SSE) updates
+    const handleRealtimeEvent = React.useCallback((event: RealtimeEvent) => {
+        if (!event.data) return;
+
+        if (event.type === 'POTHOLE_CREATED') {
+            const p = event.data.pothole;
+            if (!p || !p.id) return;
+            const newMarker: MapMarkerItem = {
+                id: p.id,
+                latitude: p.latitude,
+                longitude: p.longitude,
+                title: p.description ? p.description.slice(0, 45) + '...' : `Pothole #${p.id.slice(0, 6)}`,
+                description: p.description || 'No description provided.',
+                status: p.status || 'PENDING',
+                severity: p.severity || 'MEDIUM',
+                upvotesCount: p.votes?.length || 0,
+                imageUrl: p.reportImage?.url || p.imageUrl,
+            };
+
+            setMarkers((prev) => {
+                if (prev.some((m) => m.id === newMarker.id)) return prev;
+                return [newMarker, ...prev];
+            });
+            toast.info('Live Map Update: New pothole report submitted!');
+        } else if (event.type === 'STATUS_UPDATED' || event.type === 'ASSIGNMENT_UPDATED') {
+            const potholeId = event.data.potholeId;
+            const newStatus = event.data.newStatus || event.data.status;
+            if (!potholeId || !newStatus) return;
+
+            setMarkers((prev) =>
+                prev.map((m) => (m.id === potholeId ? { ...m, status: newStatus } : m))
+            );
+            setSelectedMarker((prev) => (prev && prev.id === potholeId ? { ...prev, status: newStatus } : prev));
+            toast.success(`Live Update: Pothole status updated to ${newStatus.replace('_', ' ')}`);
+        }
+    }, []);
+
+    useRealtimeStream(handleRealtimeEvent);
 
     // Filter markers
     const filteredMarkers = useMemo(() => {
