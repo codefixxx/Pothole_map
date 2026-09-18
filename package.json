@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "worker": "tsx src/workers/pothole.worker.ts",
-    "test": "tsx tests/run-all-tests.ts"
+    "test": "tsx tests/run-all-tests.ts",
+    "test:e2e": "playwright test --headed"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.0",
@@ -41,6 +42,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.11",
