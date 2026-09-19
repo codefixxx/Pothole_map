@@ -9,6 +9,7 @@
     "lint": "eslint",
     "worker": "tsx src/workers/pothole.worker.ts",
     "test": "tsx tests/run-all-tests.ts",
+    "test:load": "tsx tests/load/run-load-tests.ts",
     "test:e2e": "playwright test --headed"
   },
   "dependencies": {
