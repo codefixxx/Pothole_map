@@ -12,6 +12,7 @@ import { runRealtimeSseIntegrationTests } from './integration/realtime-sse.test'
 import { runPotholeServiceIntegrationTests } from './integration/pothole-service.test';
 import { runNotificationsIntegrationTests } from './integration/notifications.test';
 import { runDuplicateDetectionIntegrationTests } from './integration/duplicate-detection.test';
+import { runMunicipalityAdminIntegrationTests } from './integration/municipality-admin.test';
 
 import { runLoadSpikeStressTests } from './load/load-spike-test';
 import { runCacheFailoverLoadTests } from './load/cache-failover-load.test';
@@ -44,7 +45,8 @@ async function runMasterTestSuite() {
     const i4 = await runPotholeServiceIntegrationTests();
     const i5 = await runNotificationsIntegrationTests();
     const i6 = await runDuplicateDetectionIntegrationTests();
-    if (!i1 || !i2 || !i3 || !i4 || !i5 || !i6) allPassed = false;
+    const i7 = await runMunicipalityAdminIntegrationTests();
+    if (!i1 || !i2 || !i3 || !i4 || !i5 || !i6 || !i7) allPassed = false;
     console.log('');
 
     // TIER 3: CONCURRENCY & LOAD SPIKE STRESS TESTS
