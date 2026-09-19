@@ -3,6 +3,7 @@ import { runHealthApiIntegrationTests } from './integration/health-api.test';
 import { runRealtimeSseIntegrationTests } from './integration/realtime-sse.test';
 import { runPotholeServiceIntegrationTests } from './integration/pothole-service.test';
 import { runNotificationsIntegrationTests } from './integration/notifications.test';
+import { runDuplicateDetectionIntegrationTests } from './integration/duplicate-detection.test';
 
 async function testAllType2IntegrationTests() {
     console.log('================================================================');
@@ -15,6 +16,7 @@ async function testAllType2IntegrationTests() {
         runRealtimeSseIntegrationTests(),
         runPotholeServiceIntegrationTests(),
         runNotificationsIntegrationTests(),
+        runDuplicateDetectionIntegrationTests(),
     ]);
 
     const allPassed = results.every(Boolean);
