@@ -50,9 +50,34 @@ export const OSM_DARK_STYLE: any = {
     ],
 };
 
+export const SATELLITE_MAP_STYLE: any = {
+    version: 8,
+    sources: {
+        'satellite-tiles': {
+            type: 'raster',
+            tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            ],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: '&copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+        },
+    },
+    layers: [
+        {
+            id: 'satellite-tiles-layer',
+            type: 'raster',
+            source: 'satellite-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+        },
+    ],
+};
+
 export const MAP_STYLES = {
     light: OSM_LIGHT_STYLE,
     dark: OSM_DARK_STYLE,
+    satellite: SATELLITE_MAP_STYLE,
 };
 
 export const OSM_RASTER_STYLE: any = {

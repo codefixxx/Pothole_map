@@ -67,8 +67,14 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     const [mapLoaded, setMapLoaded] = useState(false);
     const { resolvedTheme } = useTheme();
 
-    // Determine appropriate style based on theme
-    const activeStyle = resolvedTheme === 'dark' ? MAP_STYLES.dark : MAP_STYLES.light;
+    const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
+
+    // Determine appropriate style based on theme and mode
+    const activeStyle = mapMode === 'satellite'
+        ? MAP_STYLES.satellite
+        : resolvedTheme === 'dark'
+        ? MAP_STYLES.dark
+        : MAP_STYLES.light;
 
     // Expose flyTo imperative handle
     useImperativeHandle(ref, () => ({
@@ -160,13 +166,13 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Update style when theme changes
+    // Update style when theme or mapMode changes
     useEffect(() => {
         if (!mapRef.current || !mapLoaded) return;
         try {
             mapRef.current.setStyle(activeStyle);
         } catch (err) {
-            console.warn('[MapContainer] Could not update style on theme change:', err);
+            console.warn('[MapContainer] Could not update style on theme/mode change:', err);
         }
     }, [activeStyle, mapLoaded]);
 
@@ -341,9 +347,45 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                     </div>
                 </div>
             )}
+            
+            {/* Map Layer Mode Switcher Pill */}
+            {showControls && mapLoaded && (
+                <div className="absolute top-3 left-3 z-20 flex items-center rounded-lg bg-background/90 p-1 shadow-md backdrop-blur-md border border-border">
+                    <button
+                        type="button"
+                        onClick={() => setMapMode('street')}
+                        className={cn(
+                            'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                            mapMode === 'street'
+                                ? 'bg-primary text-primary-foreground shadow-xs'
+                                : 'text-muted-foreground hover:text-foreground'
+                        )}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                        Street
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMapMode('satellite')}
+                        className={cn(
+                            'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
+                            mapMode === 'satellite'
+                                ? 'bg-primary text-primary-foreground shadow-xs'
+                                : 'text-muted-foreground hover:text-foreground'
+                        )}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                        Satellite
+                    </button>
+                </div>
+            )}
+
             <div
                 ref={mapContainerRef}
-                className={cn('h-full w-full', resolvedTheme === 'dark' && '[&_.maplibregl-canvas]:invert-[90%] [&_.maplibregl-canvas]:hue-rotate-180 [&_.maplibregl-canvas]:brightness-90 [&_.maplibregl-canvas]:contrast-115')}
+                className={cn(
+                    'h-full w-full',
+                    resolvedTheme === 'dark' && mapMode !== 'satellite' && '[&_.maplibregl-canvas]:invert-[90%] [&_.maplibregl-canvas]:hue-rotate-180 [&_.maplibregl-canvas]:brightness-90 [&_.maplibregl-canvas]:contrast-115'
+                )}
             />
         </div>
     );
