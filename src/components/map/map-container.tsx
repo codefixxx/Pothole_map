@@ -337,11 +337,14 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                 <div className="absolute inset-0 flex items-center justify-center bg-muted/40 backdrop-blur-xs z-10">
                     <div className="flex flex-col items-center gap-3">
                         <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                        <span className="text-xs font-medium text-muted-foreground">Loading Vector Tiles...</span>
+                        <span className="text-xs font-medium text-muted-foreground">Loading Vector Map Engine...</span>
                     </div>
                 </div>
             )}
-            <div ref={mapContainerRef} className="h-full w-full" />
+            <div
+                ref={mapContainerRef}
+                className={cn('h-full w-full', resolvedTheme === 'dark' && '[&_.maplibregl-canvas]:invert-[90%] [&_.maplibregl-canvas]:hue-rotate-180 [&_.maplibregl-canvas]:brightness-90 [&_.maplibregl-canvas]:contrast-115')}
+            />
         </div>
     );
 });
