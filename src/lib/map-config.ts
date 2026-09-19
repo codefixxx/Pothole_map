@@ -4,12 +4,14 @@ export const OSM_LIGHT_STYLE: any = {
         'osm-tiles': {
             type: 'raster',
             tiles: [
-                'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+                'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxzoom: 20,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         },
     },
     layers: [
@@ -18,7 +20,7 @@ export const OSM_LIGHT_STYLE: any = {
             type: 'raster',
             source: 'osm-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 20,
         },
     ],
 };
@@ -29,10 +31,14 @@ export const OSM_DARK_STYLE: any = {
         'dark-tiles': {
             type: 'raster',
             tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                'https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
-            attribution: '&copy; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+            maxzoom: 20,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         },
     },
     layers: [
@@ -41,7 +47,7 @@ export const OSM_DARK_STYLE: any = {
             type: 'raster',
             source: 'dark-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 20,
         },
     ],
 };
@@ -57,9 +63,12 @@ export const OSM_RASTER_STYLE: any = {
         'osm-tiles': {
             type: 'raster',
             tiles: [
-                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
+            maxzoom: 19,
             attribution: '&copy; OpenStreetMap Contributors',
         },
     },
