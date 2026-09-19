@@ -4,6 +4,7 @@ import { runValidationsUnitTests } from './unit/validations.test';
 import { runAuthHelpersUnitTests } from './unit/auth-helpers.test';
 import { runMunicipalitySchemaUnitTests } from './unit/municipality-schema.test';
 import { runUtilsUnitTests } from './unit/utils.test';
+import { runMapConfigUnitTests } from './unit/map-config.test';
 
 async function testAllType1UnitTests() {
     console.log('================================================================');
@@ -17,6 +18,7 @@ async function testAllType1UnitTests() {
         runAuthHelpersUnitTests(),
         runMunicipalitySchemaUnitTests(),
         runUtilsUnitTests(),
+        runMapConfigUnitTests(),
     ]);
 
     const allPassed = results.every(Boolean);
