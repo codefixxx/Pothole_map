@@ -4,12 +4,14 @@ import { runValidationsUnitTests } from './unit/validations.test';
 import { runAuthHelpersUnitTests } from './unit/auth-helpers.test';
 import { runMunicipalitySchemaUnitTests } from './unit/municipality-schema.test';
 import { runUtilsUnitTests } from './unit/utils.test';
+import { runMapConfigUnitTests } from './unit/map-config.test';
 
 import { runAuditServiceIntegrationTests } from './integration/audit-service.test';
 import { runHealthApiIntegrationTests } from './integration/health-api.test';
 import { runRealtimeSseIntegrationTests } from './integration/realtime-sse.test';
 import { runPotholeServiceIntegrationTests } from './integration/pothole-service.test';
 import { runNotificationsIntegrationTests } from './integration/notifications.test';
+import { runDuplicateDetectionIntegrationTests } from './integration/duplicate-detection.test';
 
 import { runLoadSpikeStressTests } from './load/load-spike-test';
 import { runCacheFailoverLoadTests } from './load/cache-failover-load.test';
@@ -30,7 +32,8 @@ async function runMasterTestSuite() {
     const u4 = await runAuthHelpersUnitTests();
     const u5 = await runMunicipalitySchemaUnitTests();
     const u6 = await runUtilsUnitTests();
-    if (!u1 || !u2 || !u3 || !u4 || !u5 || !u6) allPassed = false;
+    const u7 = await runMapConfigUnitTests();
+    if (!u1 || !u2 || !u3 || !u4 || !u5 || !u6 || !u7) allPassed = false;
     console.log('');
 
     // TIER 2: INTEGRATION TESTS
@@ -40,7 +43,8 @@ async function runMasterTestSuite() {
     const i3 = await runRealtimeSseIntegrationTests();
     const i4 = await runPotholeServiceIntegrationTests();
     const i5 = await runNotificationsIntegrationTests();
-    if (!i1 || !i2 || !i3 || !i4 || !i5) allPassed = false;
+    const i6 = await runDuplicateDetectionIntegrationTests();
+    if (!i1 || !i2 || !i3 || !i4 || !i5 || !i6) allPassed = false;
     console.log('');
 
     // TIER 3: CONCURRENCY & LOAD SPIKE STRESS TESTS
