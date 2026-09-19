@@ -1,98 +1,100 @@
-import { Bell, ClipboardPlus, MapPin, Radar } from 'lucide-react';
-import { ReactNode } from 'react';
-import { cn } from '@/src/lib/utils';
+'use client';
+
+import React from 'react';
+import { MapPin, Camera, Radar, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/src/components/ui/card';
+import { Badge } from '@/src/components/ui/badge';
 import { ScrollTextEffect, ScrollAppear } from '@/src/components/motion';
 
-interface Working {
-    heading: string;
-    description: string;
-    icon: React.ReactNode;
-}
+const steps = [
+    {
+        step: '01',
+        title: 'Spot & Capture',
+        description: 'Citizen identifies a road defect and captures a photo with precise HTML5 GPS location tagging.',
+        icon: MapPin,
+        iconBg: 'bg-red-500/10 text-red-500 ring-red-500/20',
+    },
+    {
+        step: '02',
+        title: 'Instant Report',
+        description: 'Upload photo details, select severity level, and fine-tune mini-map pin location in seconds.',
+        icon: Camera,
+        iconBg: 'bg-blue-500/10 text-blue-500 ring-blue-500/20',
+    },
+    {
+        step: '03',
+        title: 'AI Analysis',
+        description: 'PostGIS spatial radius & AI image similarity match potential duplicate candidates automatically.',
+        icon: Radar,
+        iconBg: 'bg-amber-500/10 text-amber-500 ring-amber-500/20',
+    },
+    {
+        step: '04',
+        title: 'Municipal Action',
+        description: 'Auto-routed into official city council queue for officer verification, team assignment, and repair.',
+        icon: CheckCircle2,
+        iconBg: 'bg-emerald-500/10 text-emerald-500 ring-emerald-500/20',
+    },
+];
 
-interface Feature43Props {
-    title?: string;
-    workings?: Working[];
-    className?: string;
-}
-
-const HowItWorks = ({
-    title = 'How It Works',
-    workings = [
-        {
-            heading: 'Spot',
-            description: 'Identify a pothole and capture its exact location.',
-            icon: <MapPin className="size-6" aria-hidden />,
-        },
-        {
-            heading: 'Report',
-            description: 'Upload photos and details to submit the report.',
-            icon: <ClipboardPlus className="size-6" aria-hidden />,
-        },
-        {
-            heading: 'Analyze',
-            description: 'System verifies the report and maps the pothole.',
-            icon: <Radar className="size-6" aria-hidden />,
-        },
-        {
-            heading: 'Act',
-            description: 'Authorities review and prioritize necessary repairs.',
-            icon: <Bell className="size-6" aria-hidden />,
-        },
-    ],
-    className,
-}: Feature43Props) => {
+export function HowItWorks() {
     return (
-        <section
-            className={cn(
-                'bg-zinc-50 py-16 md:py-32 dark:bg-transparent ',
-                className,
-            )}
-            id="solution"
-        >
-            <div className="mx-auto max-w-5xl px-6">
-                {title && (
-                    <div className="text-center">
-                        <ScrollTextEffect
-                            as="h2"
-                            per="char"
-                            className="text-balance text-4xl font-semibold lg:text-5xl"
-                        >
-                            {title}
-                        </ScrollTextEffect>
-                    </div>
-                )}
-                <ScrollAppear className="mt-8 grid gap-6 md:mt-16 sm:grid-cols-2 lg:grid-cols-4">
-                    {workings.map((working, i) => (
-                        <div key={i} className="text-center">
-                            <div className="mb-4 flex mx-auto size-36 items-center justify-center">
-                                <CardDecorator>{working.icon}</CardDecorator>
-                            </div>
+        <section className="py-16 md:py-24 bg-background" id="solution">
+            <div className="mx-auto max-w-6xl px-6 space-y-12">
+                <div className="mx-auto max-w-2xl text-center space-y-4">
+                    <Badge variant="outline" className="px-3.5 py-1 text-xs font-semibold gap-1.5 border-primary/30 text-primary bg-primary/10 rounded-full">
+                        <ArrowRight className="size-3.5" />
+                        Simplified Workflow
+                    </Badge>
 
-                            <h3 className="mb-2 font-medium">
-                                {working.heading}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                                {working.description}
-                            </p>
-                        </div>
-                    ))}
+                    <ScrollTextEffect
+                        as="h2"
+                        per="word"
+                        className="text-balance text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-[1.15]"
+                    >
+                        How PotholeMap Operates
+                    </ScrollTextEffect>
+
+                    <p className="text-muted-foreground/90 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+                        A transparent 4-step civic pipeline transforming raw road reports into verified municipal repair actions.
+                    </p>
+                </div>
+
+                <ScrollAppear className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    {steps.map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                            <Card
+                                key={idx}
+                                className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/60 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
+                            >
+                                <CardHeader className="space-y-4 p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className={`size-11 rounded-xl flex items-center justify-center ring-1 ${item.iconBg} transition-transform duration-300 group-hover:scale-110 shadow-xs`}>
+                                            <Icon className="size-5.5" />
+                                        </div>
+                                        <span className="text-2xl font-black text-muted-foreground/30 font-mono tracking-tighter">
+                                            {item.step}
+                                        </span>
+                                    </div>
+
+                                    <CardTitle className="text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
+                                        {item.title}
+                                    </CardTitle>
+                                </CardHeader>
+
+                                <CardContent className="p-6 pt-0">
+                                    <CardDescription className="text-xs sm:text-sm leading-relaxed text-muted-foreground/90 font-normal">
+                                        {item.description}
+                                    </CardDescription>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
                 </ScrollAppear>
             </div>
         </section>
     );
-};
+}
 
-export { HowItWorks };
-
-const CardDecorator = ({ children }: { children: ReactNode }) => (
-    <div className="mask-radial-from-40% mask-radial-to-60% relative mx-auto size-36 duration-200 [--color-border:color-mix(in_oklab,var(--color-zinc-950)10%,transparent)] group-hover:[--color-border:color-mix(in_oklab,var(--color-zinc-950)20%,transparent)] dark:[--color-border:color-mix(in_oklab,var(--color-white)15%,transparent)] dark:group-hover:[--color-border:color-mix(in_oklab,var(--color-white)20%,transparent)]">
-        <div
-            aria-hidden
-            className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] bg-[size:24px_24px] dark:opacity-50"
-        />
-
-        <div className="bg-background absolute inset-0 m-auto flex size-12 items-center justify-center border-l border-t">
-            {children}
-        </div>
-    </div>
-);
+export default HowItWorks;

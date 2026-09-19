@@ -43,8 +43,8 @@ export const LogoCloud = () => {
             <div className="group relative m-auto max-w-6xl px-6">
                 <div className="flex flex-col items-center md:flex-row">
                     <div className="inline md:max-w-44 md:border-r md:pr-6">
-                        <p className="text-end text-sm">
-                            Supported by the organizations
+                        <p className="text-center md:text-end text-xs sm:text-sm font-medium text-muted-foreground/80 leading-snug">
+                            Trusted by leading tech & civic partners
                         </p>
                     </div>
 

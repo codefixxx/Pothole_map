@@ -29,20 +29,20 @@ export function InteractiveShowcase() {
         <section className="py-16 md:py-24 bg-gradient-to-b from-background via-muted/30 to-background border-y border-border/50">
             <div className="mx-auto max-w-5xl px-6 space-y-12">
                 <div className="text-center max-w-2xl mx-auto space-y-4">
-                    <Badge variant="outline" className="px-3 py-1 text-xs gap-1.5 border-primary/30 text-primary bg-primary/5">
-                        <Sparkles className="size-3.5" />
+                    <Badge variant="outline" className="px-3.5 py-1 text-xs font-semibold gap-1.5 border-primary/30 text-primary bg-primary/10 rounded-full">
+                        <Sparkles className="size-3.5 text-amber-500" />
                         End-To-End Infrastructure
                     </Badge>
 
                     <ScrollTextEffect
                         as="h2"
-                        per="char"
-                        className="text-balance text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
+                        per="word"
+                        className="text-balance text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15]"
                     >
                         Built For Citizens, Officers & Leaders
                     </ScrollTextEffect>
 
-                    <p className="text-muted-foreground text-sm sm:text-base">
+                    <p className="text-muted-foreground/90 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
                         Experience the complete civic hazard lifecycle—from instant camera GPS capture to AI duplicate merging and municipal dispatch.
                     </p>
                 </div>

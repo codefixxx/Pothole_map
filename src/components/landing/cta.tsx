@@ -18,11 +18,11 @@ export default function CallToAction() {
                     />
 
                     <div className="space-y-4 max-w-2xl mx-auto">
-                        <h2 className="text-balance text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-                            Help Make Roads Safer Today
+                        <h2 className="text-balance text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15]">
+                            Help Make Roads <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-indigo-400">Safer Today</span>
                         </h2>
 
-                        <p className="text-muted-foreground text-sm sm:text-base">
+                        <p className="text-muted-foreground/90 text-sm sm:text-base leading-relaxed">
                             Join thousands of citizens and municipal officers improving infrastructure with real-time hazard mapping.
                         </p>
                     </div>

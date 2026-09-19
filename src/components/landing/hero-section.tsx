@@ -53,9 +53,9 @@ export default function HeroSection() {
                                 preset="fade-in-blur"
                                 speedSegment={0.3}
                                 as="h1"
-                                className="text-balance text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl leading-tight"
+                                className="text-balance text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl leading-[1.1]"
                             >
-                                Report & Track Road Hazards in Real Time
+                                Report & Track Road Hazards <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-indigo-500">in Real Time</span>
                             </TextEffect>
 
                             <TextEffect
@@ -64,9 +64,9 @@ export default function HeroSection() {
                                 speedSegment={0.3}
                                 delay={0.4}
                                 as="p"
-                                className="text-pretty text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto"
+                                className="text-pretty text-base sm:text-lg text-muted-foreground/90 max-w-2xl mx-auto font-normal leading-relaxed"
                             >
-                                Empowering citizens and municipal authorities with instant GPS geo-location, AI duplicate matching, and PostGIS boundary routing.
+                                Empowering citizens and municipal authorities with high-precision GPS geo-location, AI duplicate matching, and PostGIS boundary routing.
                             </TextEffect>
 
                             <AnimatedGroup
