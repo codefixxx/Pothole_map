@@ -7,6 +7,7 @@ import {
     Logos,
     CallToAction,
 } from '@/src/components/landing';
+import { InteractiveShowcase } from '@/src/components/landing/interactive-showcase';
 import { Footer } from '@/src/components/layout';
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
         <>
             <HeroSection />
             <WhyItMatters />
+            <InteractiveShowcase />
             <HowItWorks />
             <Features />
             <StatsSection />
