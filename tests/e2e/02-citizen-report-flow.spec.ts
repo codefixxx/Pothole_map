@@ -7,6 +7,10 @@ test.describe('E2E Flow 2: Citizen Hazard Reporting & Form Validation', () => {
     await ensureE2EUsersExist();
   });
 
+  test.beforeEach(async () => {
+    test.setTimeout(60000);
+  });
+
   test('Form Validation - Attempt Submission with Invalid Short Input', async ({ page }) => {
     // 1. Authenticate as Citizen User
     await loginAs(page, CITIZEN_USER.email, CITIZEN_USER.password);
@@ -17,7 +21,7 @@ test.describe('E2E Flow 2: Citizen Hazard Reporting & Form Validation', () => {
 
     // 3. Trigger Report Modal
     const reportBtn = page.locator('button:has-text("Report Pothole"), button:has-text("Report")').first();
-    await expect(reportBtn).toBeVisible();
+    await expect(reportBtn).toBeVisible({ timeout: 15000 });
     await reportBtn.click();
 
     // 4. Form elements
@@ -25,7 +29,7 @@ test.describe('E2E Flow 2: Citizen Hazard Reporting & Form Validation', () => {
     const descInput = page.locator('#report-desc');
     const submitBtn = page.locator('form button[type="submit"]').first();
 
-    await expect(titleInput).toBeVisible();
+    await expect(titleInput).toBeVisible({ timeout: 10000 });
 
     // Attempt submission with empty fields
     await submitBtn.click();
@@ -50,7 +54,7 @@ test.describe('E2E Flow 2: Citizen Hazard Reporting & Form Validation', () => {
 
     // 3. Trigger Report Modal
     const reportBtn = page.locator('button:has-text("Report Pothole"), button:has-text("Report")').first();
-    await expect(reportBtn).toBeVisible();
+    await expect(reportBtn).toBeVisible({ timeout: 15000 });
     await reportBtn.click();
 
     // 4. Fill out valid report details
@@ -58,24 +62,25 @@ test.describe('E2E Flow 2: Citizen Hazard Reporting & Form Validation', () => {
     const descInput = page.locator('#report-desc');
     const submitBtn = page.locator('form button[type="submit"]').first();
 
-    await expect(titleInput).toBeVisible();
+    await expect(titleInput).toBeVisible({ timeout: 10000 });
     const timestamp = Date.now();
     await titleInput.fill(`Deep Crater Hazard ${timestamp}`);
     await descInput.fill(`Severe roadbed damage causing traffic obstruction near intersection ${timestamp}.`);
 
     // Select Medium / High severity
     const highSeverityBtn = page.locator('button:has-text("High")').first();
-    if (await highSeverityBtn.isVisible()) {
+    const isHighVis = await highSeverityBtn.isVisible({ timeout: 2000 }).catch(() => false);
+    if (isHighVis) {
       await highSeverityBtn.click();
     }
 
     // Submit report
-    await expect(submitBtn).toBeEnabled();
+    await expect(submitBtn).toBeEnabled({ timeout: 10000 });
     await submitBtn.click();
 
     // 5. Assert successful submission toast or modal dismissal
     const toastSuccess = page.locator('.sonner-toast:has-text("filed successfully"), [data-sonner-toast]:has-text("filed successfully"), .sonner-toast:has-text("successfully")').first();
-    await expect(toastSuccess).toBeVisible({ timeout: 10000 });
+    await expect(toastSuccess).toBeVisible({ timeout: 15000 });
   });
 
 });

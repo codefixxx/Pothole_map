@@ -1,6 +1,7 @@
 import { Page, expect } from '@playwright/test';
 import { db } from '../../src/lib/db';
 import { auth } from '../../src/lib/auth';
+import { MunicipalityRole } from '@prisma/client';
 
 export const CITIZEN_USER = {
   email: 'citizen.e2e@gmail.com',
@@ -14,10 +15,17 @@ export const ADMIN_USER = {
   name: 'E2E Admin Officer'
 };
 
+export const OFFICER_USER = {
+  email: 'officer.e2e@gmail.com',
+  password: 'password123',
+  name: 'E2E Municipal Officer'
+};
+
 export async function ensureE2EUsersExist() {
   try {
-    let existingCitizen = await db.user.findUnique({ where: { email: CITIZEN_USER.email } });
-    if (!existingCitizen) {
+    // 1. Citizen User
+    let citizen = await db.user.findUnique({ where: { email: CITIZEN_USER.email } });
+    if (!citizen) {
       await auth.api.signUpEmail({
         body: {
           email: CITIZEN_USER.email,
@@ -25,14 +33,15 @@ export async function ensureE2EUsersExist() {
           name: CITIZEN_USER.name,
         }
       });
-      await db.user.update({
+      citizen = await db.user.update({
         where: { email: CITIZEN_USER.email },
         data: { emailVerified: true }
       });
     }
 
-    let existingAdmin = await db.user.findUnique({ where: { email: ADMIN_USER.email } });
-    if (!existingAdmin) {
+    // 2. Admin User
+    let admin = await db.user.findUnique({ where: { email: ADMIN_USER.email } });
+    if (!admin) {
       await auth.api.signUpEmail({
         body: {
           email: ADMIN_USER.email,
@@ -40,9 +49,42 @@ export async function ensureE2EUsersExist() {
           name: ADMIN_USER.name,
         }
       });
-      await db.user.update({
+      admin = await db.user.update({
         where: { email: ADMIN_USER.email },
         data: { role: 'ADMIN', emailVerified: true }
+      });
+    }
+
+    // 3. Officer User & Municipality Membership
+    let officer = await db.user.findUnique({ where: { email: OFFICER_USER.email } });
+    if (!officer) {
+      await auth.api.signUpEmail({
+        body: {
+          email: OFFICER_USER.email,
+          password: OFFICER_USER.password,
+          name: OFFICER_USER.name,
+        }
+      });
+      officer = await db.user.update({
+        where: { email: OFFICER_USER.email },
+        data: { emailVerified: true }
+      });
+    }
+
+    // Ensure test municipality exists
+    let mun = await db.municipality.findUnique({ where: { name: 'E2E Test City' } });
+    if (!mun) {
+      mun = await db.municipality.create({ data: { name: 'E2E Test City' } });
+    }
+
+    const member = await db.municipalityMember.findUnique({ where: { userId: officer.id } });
+    if (!member) {
+      await db.municipalityMember.create({
+        data: {
+          userId: officer.id,
+          municipalityId: mun.id,
+          role: MunicipalityRole.OFFICER
+        }
       });
     }
   } catch (err) {
@@ -55,6 +97,8 @@ export async function createTestPothole(title: string) {
   const citizen = await db.user.findUnique({ where: { email: CITIZEN_USER.email } });
   if (!citizen) throw new Error('Citizen user not found');
 
+  const mun = await db.municipality.findUnique({ where: { name: 'E2E Test City' } });
+
   return await db.pothole.create({
     data: {
       title,
@@ -64,25 +108,26 @@ export async function createTestPothole(title: string) {
       severity: 6,
       status: 'PENDING',
       userId: citizen.id,
+      municipalityId: mun?.id
     }
   });
 }
 
 export async function loginAs(page: Page, email: string, password: string) {
+  await page.context().clearCookies();
   await page.goto('http://localhost:3000/auth/login');
   await page.waitForLoadState('domcontentloaded');
 
-  if (!page.url().includes('/auth/login')) {
-    return;
-  }
-
   const emailInput = page.locator('input[name="email"]');
-  if (await emailInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-    const passwordInput = page.locator('input[name="password"]');
-    const submitBtn = page.locator('button[type="submit"]:has-text("Login")');
-    await emailInput.fill(email);
-    await passwordInput.fill(password);
-    await submitBtn.click();
-    await page.waitForURL((url) => !url.href.includes('/auth/login'), { timeout: 10000 }).catch(() => {});
-  }
+  await expect(emailInput).toBeVisible({ timeout: 15000 });
+
+  const passwordInput = page.locator('input[name="password"]');
+  const submitBtn = page.locator('button[type="submit"]:has-text("Login")');
+
+  await emailInput.fill(email);
+  await passwordInput.fill(password);
+  await submitBtn.click();
+
+  await page.waitForURL((url) => !url.href.includes('/auth/login'), { timeout: 15000 }).catch(() => {});
+  await page.waitForLoadState('domcontentloaded');
 }
