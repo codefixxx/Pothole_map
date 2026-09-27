@@ -318,10 +318,6 @@ export async function findDashboardQueue({
 
     if (status) {
         where.status = status;
-    } else {
-        where.status = {
-            in: [Status.PENDING, Status.VERIFIED, Status.ONGOING],
-        };
     }
 
     let orderBy: any[] = [];

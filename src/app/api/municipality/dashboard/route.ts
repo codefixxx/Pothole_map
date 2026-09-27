@@ -27,7 +27,7 @@ export const GET = asyncHandler(async (req: Request) => {
     }
 
     let status: Status | undefined = undefined;
-    if (qStatus) {
+    if (qStatus && qStatus !== 'ALL') {
         if (!Object.values(Status).includes(qStatus as Status)) {
             throw new AppError('Invalid status parameter', 400);
         }
