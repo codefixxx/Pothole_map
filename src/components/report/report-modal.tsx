@@ -21,6 +21,7 @@ import {
     MapPin,
     Crosshair,
     Camera,
+    Upload,
     AlertTriangle,
     ThumbsUp,
     CheckCircle2,
@@ -32,6 +33,7 @@ import {
     Info,
 } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/src/lib/utils';
 
 interface DuplicateCandidate {
     id: string;
@@ -70,13 +72,14 @@ export function ReportModal({
     const [locationSource, setLocationSource] = useState<'GPS' | 'MANUAL_ADJUSTMENT'>('GPS');
     const [isLocating, setIsLocating] = useState(false);
 
-    // Image upload state
+    // Image upload & drag/drop state
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
     const [uploadedStorageKey, setUploadedStorageKey] = useState<string | null>(null);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [isUploading, setIsUploading] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Proximity duplicate check
@@ -151,15 +154,23 @@ export function ReportModal({
             setUploadedStorageKey(null);
             setUploadProgress(0);
             setIsUploading(false);
+            setIsDragging(false);
             setDuplicateCandidate(null);
             setDismissDuplicateAlert(false);
         }
     }, [open, initialCoords]);
 
-    // Handle File Pick
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Process file selected via pick, drop, or paste
+    const processFile = async (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select or drop an image file (JPEG, PNG, WEBP).');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Image size exceeds 10MB limit.');
+            return;
+        }
 
         setSelectedFile(file);
         const objectUrl = URL.createObjectURL(file);
@@ -178,6 +189,63 @@ export function ReportModal({
         }
     };
 
+    // Handle File Input Pick
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            processFile(file);
+        }
+    };
+
+    // Drag and drop event handlers
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isDragging) setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+            processFile(files[0]);
+        }
+    };
+
+    // Listen for clipboard paste events (Ctrl+V / Cmd+V)
+    useEffect(() => {
+        if (!open) return;
+
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        processFile(file);
+                        toast.success('Pasted photo from clipboard!');
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('paste', handlePaste);
+        return () => window.removeEventListener('paste', handlePaste);
+    }, [open, session?.user]);
+
     // Remove photo
     const handleRemovePhoto = () => {
         setSelectedFile(null);
@@ -187,6 +255,7 @@ export function ReportModal({
         setUploadedStorageKey(null);
         setUploadProgress(0);
         setIsUploading(false);
+        setIsDragging(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -416,7 +485,16 @@ export function ReportModal({
                         ) : (
                             <div
                                 onClick={() => fileInputRef.current?.click()}
-                                className="group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/20 p-6 text-center hover:border-primary/60 hover:bg-muted/40 transition-all cursor-pointer"
+                                onDragEnter={handleDragOver}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                className={cn(
+                                    "group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-all cursor-pointer select-none",
+                                    isDragging
+                                        ? "border-primary bg-primary/10 ring-2 ring-primary/30 scale-[1.01] shadow-lg shadow-primary/10"
+                                        : "border-border/80 bg-muted/20 hover:border-primary/60 hover:bg-muted/40"
+                                )}
                             >
                                 <input
                                     ref={fileInputRef}
@@ -426,14 +504,19 @@ export function ReportModal({
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
-                                <div className="rounded-full bg-primary/10 p-3 text-primary group-hover:scale-110 transition-transform">
-                                    <Camera className="size-6" />
+                                <div className={cn(
+                                    "rounded-full p-3 transition-all duration-200",
+                                    isDragging
+                                        ? "bg-primary text-primary-foreground scale-110 animate-bounce"
+                                        : "bg-primary/10 text-primary group-hover:scale-110"
+                                )}>
+                                    {isDragging ? <Upload className="size-6" /> : <Camera className="size-6" />}
                                 </div>
                                 <span className="mt-2 text-xs font-semibold text-foreground">
-                                    Take a Photo or Select from Gallery
+                                    {isDragging ? "Drop photo to attach" : "Drag & drop photo or click to browse"}
                                 </span>
                                 <span className="text-[11px] text-muted-foreground mt-0.5">
-                                    High-res photos help officers assess roadbed damage (Max 4MB)
+                                    JPEG, PNG, WEBP or Paste (Ctrl+V) from clipboard (Max 10MB)
                                 </span>
                             </div>
                         )}
