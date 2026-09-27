@@ -209,6 +209,22 @@ export async function transitionPotholeStatus({
     });
     void invalidateCacheKeys(['potholes:all*']);
 
+    // Log to system AuditLog table for Super Admin & Municipal Audit Boards
+    void logAuditAction({
+        actorId,
+        action: `STATUS_TRANSITION_${oldStatus}_TO_${newStatus}`,
+        entityType: 'POTHOLE',
+        entityId: potholeId,
+        details: {
+            description: `Transitioned status from ${oldStatus} to ${newStatus}${reason ? `: "${reason}"` : ''}`,
+            title: pothole.title,
+            oldStatus,
+            newStatus,
+            reason: reason || null,
+            municipalityId: result.municipalityId,
+        },
+    });
+
     return result;
 }
 
@@ -369,6 +385,23 @@ export async function assignPothole({
         pothole: result,
     });
     void invalidateCacheKeys(['potholes:all*']);
+
+    // Log to system AuditLog table for Super Admin & Municipal Audit Boards
+    void logAuditAction({
+        actorId,
+        action: 'OFFICER_ASSIGNED',
+        entityType: 'POTHOLE',
+        entityId: potholeId,
+        details: {
+            description: `Assigned officer ${officer.name || officer.email} (${officer.email}) to report`,
+            title: pothole.title,
+            officerId,
+            officerEmail: officer.email,
+            officerName: officer.name,
+            newStatus,
+            municipalityId: result.municipalityId,
+        },
+    });
 
     return result;
 }

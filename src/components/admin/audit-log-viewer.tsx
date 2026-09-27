@@ -61,13 +61,37 @@ export function AuditLogViewer() {
     const filteredLogs = logs.filter((log) => {
         if (!searchQuery.trim()) return true;
         const q = searchQuery.toLowerCase();
+        const detailsStr = log.details ? JSON.stringify(log.details).toLowerCase() : '';
         return (
             log.action.toLowerCase().includes(q) ||
             log.entityType.toLowerCase().includes(q) ||
             log.actor.email.toLowerCase().includes(q) ||
-            (log.actor.name && log.actor.name.toLowerCase().includes(q))
+            (log.actor.name && log.actor.name.toLowerCase().includes(q)) ||
+            detailsStr.includes(q)
         );
     });
+
+    const getLogSummary = (log: AuditLogItem): string | null => {
+        const details = log.details || {};
+        if (typeof details === 'string') return details;
+        if (details.description) return details.description;
+        if (details.oldStatus && details.newStatus) {
+            let text = `${details.oldStatus} → ${details.newStatus}`;
+            if (details.reason) text += `: "${details.reason}"`;
+            return text;
+        }
+        if (details.fromStatus && details.toStatus) {
+            let text = `${details.fromStatus} → ${details.toStatus}`;
+            if (details.reason) text += `: "${details.reason}"`;
+            return text;
+        }
+        if (details.officerEmail) {
+            return `Assigned officer ${details.officerName ? `${details.officerName} (${details.officerEmail})` : details.officerEmail}`;
+        }
+        if (details.reason) return details.reason;
+        if (details.notes) return details.notes;
+        return null;
+    };
 
     const getActionBadge = (action: string) => {
         if (action.includes('TRANSITION') || action.includes('STATUS')) {
@@ -104,7 +128,7 @@ export function AuditLogViewer() {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                         <Input
-                            placeholder="Filter by action, entity, or officer email..."
+                            placeholder="Filter by action, entity, officer email, or description..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9 h-9 text-xs"
@@ -117,61 +141,74 @@ export function AuditLogViewer() {
                     <Table>
                         <TableHeader className="bg-muted/40 text-xs">
                             <TableRow>
-                                <TableHead className="w-[180px]">Timestamp</TableHead>
-                                <TableHead>Actor / User</TableHead>
-                                <TableHead>Action</TableHead>
-                                <TableHead>Target Entity</TableHead>
-                                <TableHead className="text-right">Details</TableHead>
+                                <TableHead className="w-[160px]">Timestamp</TableHead>
+                                <TableHead className="w-[180px]">Actor / User</TableHead>
+                                <TableHead className="w-[170px]">Action</TableHead>
+                                <TableHead className="w-[130px]">Target Entity</TableHead>
+                                <TableHead>Description / Summary</TableHead>
+                                <TableHead className="text-right w-[90px]">Details</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody className="text-xs">
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                                         Loading audit logs...
                                     </TableCell>
                                 </TableRow>
                             ) : filteredLogs.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                                         No audit records found.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredLogs.map((log) => (
-                                    <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                                        <TableCell className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
-                                            {new Date(log.createdAt).toLocaleString()}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-                                                    {log.actor.name ? log.actor.name.charAt(0).toUpperCase() : <UserIcon className="size-3" />}
+                                filteredLogs.map((log) => {
+                                    const summary = getLogSummary(log);
+                                    return (
+                                        <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
+                                            <TableCell className="font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                                                {new Date(log.createdAt).toLocaleString()}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold shrink-0">
+                                                        {log.actor.name ? log.actor.name.charAt(0).toUpperCase() : <UserIcon className="size-3" />}
+                                                    </div>
+                                                    <div className="truncate">
+                                                        <p className="font-medium leading-none text-foreground truncate">{log.actor.name || log.actor.email}</p>
+                                                        <p className="text-[10px] text-muted-foreground mt-0.5">{log.actor.role}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="font-medium leading-none text-foreground">{log.actor.name || log.actor.email}</p>
-                                                    <p className="text-[10px] text-muted-foreground mt-0.5">{log.actor.role}</p>
-                                                </div>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>{getActionBadge(log.action)}</TableCell>
-                                        <TableCell className="font-mono text-[11px]">
-                                            <span className="font-semibold text-foreground/80">{log.entityType}</span>
-                                            <span className="text-muted-foreground ml-1">#{log.entityId.slice(0, 8)}</span>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => setSelectedLog(log)}
-                                                className="h-7 px-2 text-xs gap-1"
-                                            >
-                                                <FileText className="size-3.5 text-muted-foreground" />
-                                                <span>Inspect</span>
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                            </TableCell>
+                                            <TableCell>{getActionBadge(log.action)}</TableCell>
+                                            <TableCell className="font-mono text-[11px]">
+                                                <span className="font-semibold text-foreground/80">{log.entityType}</span>
+                                                <span className="text-muted-foreground ml-1">#{log.entityId.slice(0, 8)}</span>
+                                            </TableCell>
+                                            <TableCell className="max-w-[280px]">
+                                                {summary ? (
+                                                    <p className="text-xs text-foreground/90 font-medium truncate" title={summary}>
+                                                        {summary}
+                                                    </p>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground/60 italic">No description</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => setSelectedLog(log)}
+                                                    className="h-7 px-2 text-xs gap-1"
+                                                >
+                                                    <FileText className="size-3.5 text-muted-foreground" />
+                                                    <span>Inspect</span>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                             )}
                         </TableBody>
                     </Table>
@@ -241,6 +278,13 @@ export function AuditLogViewer() {
                                 </div>
                             </div>
 
+                            {getLogSummary(selectedLog) && (
+                                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs">
+                                    <span className="text-muted-foreground font-medium block text-[11px] uppercase tracking-wider">Summary Description</span>
+                                    <p className="font-semibold text-foreground mt-0.5">{getLogSummary(selectedLog)}</p>
+                                </div>
+                            )}
+
                             <div>
                                 <h4 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wider">Payload Metadata</h4>
                                 <pre className="rounded-lg bg-zinc-950 p-3 text-[11px] font-mono text-emerald-400 overflow-x-auto max-h-60 border">
@@ -254,3 +298,4 @@ export function AuditLogViewer() {
         </Card>
     );
 }
+
