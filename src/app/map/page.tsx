@@ -108,10 +108,10 @@ const SAMPLE_MARKERS: MapMarkerItem[] = [
 const STATUS_FILTERS = [
     { label: 'All Statuses', value: 'ALL' },
     { label: 'Pending', value: 'PENDING' },
-    { label: 'Under Review', value: 'UNDER_REVIEW' },
     { label: 'Verified', value: 'VERIFIED' },
-    { label: 'In Progress', value: 'IN_PROGRESS' },
-    { label: 'Resolved', value: 'RESOLVED' },
+    { label: 'In Progress', value: 'ONGOING' },
+    { label: 'Resolved / Fixed', value: 'FIXED' },
+    { label: 'Rejected', value: 'REJECTED' },
 ];
 
 const SEVERITY_FILTERS = [
@@ -120,6 +120,20 @@ const SEVERITY_FILTERS = [
     { label: 'Medium', value: 'MEDIUM' },
     { label: 'Low', value: 'LOW' },
 ];
+
+const normalizeSeverityLabel = (s: any): 'LOW' | 'MEDIUM' | 'HIGH' => {
+    if (typeof s === 'number') {
+        return s >= 7 ? 'HIGH' : s >= 4 ? 'MEDIUM' : 'LOW';
+    }
+    if (typeof s === 'string') {
+        if (s === 'HIGH' || s === 'MEDIUM' || s === 'LOW') return s;
+        const parsed = parseInt(s, 10);
+        if (!isNaN(parsed)) {
+            return parsed >= 7 ? 'HIGH' : parsed >= 4 ? 'MEDIUM' : 'LOW';
+        }
+    }
+    return 'MEDIUM';
+};
 
 export default function MapPage() {
     const { data: session } = useSession();
@@ -162,7 +176,7 @@ export default function MapPage() {
     useEffect(() => {
         async function fetchReports() {
             try {
-                const res = await fetch('/api/potholes');
+                const res = await fetch('/api/potholes?limit=500');
                 if (res.ok) {
                     const json = await res.json();
                     if (json.data && Array.isArray(json.data) && json.data.length > 0) {
@@ -173,7 +187,7 @@ export default function MapPage() {
                             title: p.description ? p.description.slice(0, 45) + '...' : `Pothole #${p.id.slice(0, 6)}`,
                             description: p.description || 'No description provided.',
                             status: p.status,
-                            severity: p.severity,
+                            severity: normalizeSeverityLabel(p.severity),
                             upvotesCount: p.votes?.length || p.upvotesCount || 0,
                             imageUrl: p.reportImage?.url || p.imageUrl,
                         }));
@@ -208,7 +222,7 @@ export default function MapPage() {
                 title: p.description ? p.description.slice(0, 45) + '...' : `Pothole #${p.id.slice(0, 6)}`,
                 description: p.description || 'No description provided.',
                 status: p.status || 'PENDING',
-                severity: p.severity || 'MEDIUM',
+                severity: normalizeSeverityLabel(p.severity),
                 upvotesCount: p.votes?.length || 0,
                 imageUrl: p.reportImage?.url || p.imageUrl,
             };
@@ -236,12 +250,31 @@ export default function MapPage() {
     // Filter markers
     const filteredMarkers = useMemo(() => {
         return markers.filter((m) => {
-            const matchesStatus = activeStatus === 'ALL' || m.status === activeStatus;
-            const matchesSeverity = activeSeverity === 'ALL' || m.severity === activeSeverity;
+            let matchesStatus = false;
+            if (activeStatus === 'ALL') {
+                matchesStatus = true;
+            } else if (activeStatus === 'PENDING') {
+                matchesStatus = m.status === 'PENDING' || m.status === 'UNDER_REVIEW';
+            } else if (activeStatus === 'VERIFIED') {
+                matchesStatus = m.status === 'VERIFIED';
+            } else if (activeStatus === 'ONGOING' || activeStatus === 'IN_PROGRESS') {
+                matchesStatus = m.status === 'ONGOING' || m.status === 'IN_PROGRESS' || m.status === 'ASSIGNED';
+            } else if (activeStatus === 'FIXED' || activeStatus === 'RESOLVED') {
+                matchesStatus = m.status === 'FIXED' || m.status === 'RESOLVED' || m.status === 'REPAIR_COMPLETED';
+            } else if (activeStatus === 'REJECTED') {
+                matchesStatus = m.status === 'REJECTED';
+            } else {
+                matchesStatus = m.status === activeStatus;
+            }
+
+            const markerSev = normalizeSeverityLabel(m.severity);
+            const matchesSeverity = activeSeverity === 'ALL' || markerSev === activeSeverity;
+
             const matchesSearch =
                 searchQuery.trim() === '' ||
-                m.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                m.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                (m.title && m.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (m.description && m.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
             return matchesStatus && matchesSeverity && matchesSearch;
         });
     }, [markers, activeStatus, activeSeverity, searchQuery]);

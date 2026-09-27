@@ -70,7 +70,7 @@ export async function findAll(
     page = 1,
     limit = 20,
 ) {
-    limit = Math.min(limit, 50);
+    limit = Math.min(limit, 500);
     const skip = (page - 1) * limit;
     const cacheKey = `potholes:all:page_${page}:limit_${limit}`;
 

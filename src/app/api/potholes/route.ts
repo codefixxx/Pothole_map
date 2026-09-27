@@ -5,8 +5,14 @@ import { headers } from 'next/headers';
 import { createPotholeSchema } from '@/src/lib/validations/pothole.schema';
 import * as potholeService from '@/src/services/pothole.service';
 
-export const GET = asyncHandler(async () => {
-    const potholes = await potholeService.getAllPotholes();
+export const GET = asyncHandler(async (req: Request) => {
+    const { searchParams } = new URL(req.url);
+    const limitParam = searchParams.get('limit');
+    const pageParam = searchParams.get('page');
+    const limit = limitParam ? parseInt(limitParam, 10) : 500;
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+
+    const potholes = await potholeService.getAllPotholes(page, limit);
 
     return Response.json({
         success: true,
