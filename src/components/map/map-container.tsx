@@ -46,6 +46,47 @@ function getStatusSvgIcon(status: string) {
     }
 }
 
+function declusterMarkers<T extends { latitude: number; longitude: number; id: string }>(rawMarkers: T[]): T[] {
+    const groups: Record<string, T[]> = {};
+
+    rawMarkers.forEach((m) => {
+        if (typeof m.latitude !== 'number' || typeof m.longitude !== 'number') return;
+        const key = `${m.latitude.toFixed(4)},${m.longitude.toFixed(4)}`;
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(m);
+    });
+
+    const declustered: T[] = [];
+
+    Object.values(groups).forEach((group) => {
+        if (group.length === 1) {
+            declustered.push(group[0]);
+        } else {
+            const count = group.length;
+            group.forEach((item, index) => {
+                const itemsInRing = 8;
+                const ringIndex = Math.floor(index / itemsInRing);
+                const posInRing = index % itemsInRing;
+                const totalInThisRing = Math.min(count - ringIndex * itemsInRing, itemsInRing);
+
+                const angle = (2 * Math.PI * posInRing) / totalInThisRing + (ringIndex * 0.4);
+                const radiusDegrees = 0.00018 * (ringIndex + 1);
+
+                const latOffset = radiusDegrees * Math.sin(angle);
+                const lngOffset = (radiusDegrees * Math.cos(angle)) / Math.cos((item.latitude * Math.PI) / 180);
+
+                declustered.push({
+                    ...item,
+                    latitude: item.latitude + latOffset,
+                    longitude: item.longitude + lngOffset,
+                });
+            });
+        }
+    });
+
+    return declustered;
+}
+
 export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(function MapContainer(
     {
         center = DEFAULT_MAP_CENTER,
@@ -241,7 +282,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         }
     }, [jurisdictionPolygon, mapLoaded]);
 
-    // Render Markers
+    // Render Markers with declustering for overlapping coordinates
     useEffect(() => {
         if (!mapRef.current || !mapLoaded) return;
 
@@ -249,7 +290,9 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
 
-        markers.forEach((item) => {
+        const displayMarkers = declusterMarkers(markers);
+
+        displayMarkers.forEach((item) => {
             const isSelected = selectedMarkerId === item.id;
             const status = STATUS_COLORS[item.status] || STATUS_COLORS.PENDING;
             const isHighSeverity = item.severity === 'HIGH';
