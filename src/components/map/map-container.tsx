@@ -46,7 +46,7 @@ function getStatusSvgIcon(status: string) {
     }
 }
 
-function declusterMarkers<T extends { latitude: number; longitude: number; id: string }>(rawMarkers: T[]): T[] {
+function declusterMarkers<T extends { latitude: number; longitude: number; id: string }>(rawMarkers: T[]): (T & { clusterCount?: number })[] {
     const groups: Record<string, T[]> = {};
 
     rawMarkers.forEach((m) => {
@@ -56,7 +56,7 @@ function declusterMarkers<T extends { latitude: number; longitude: number; id: s
         groups[key].push(m);
     });
 
-    const declustered: T[] = [];
+    const declustered: (T & { clusterCount?: number })[] = [];
 
     Object.values(groups).forEach((group) => {
         if (group.length === 1) {
@@ -79,6 +79,7 @@ function declusterMarkers<T extends { latitude: number; longitude: number; id: s
                     ...item,
                     latitude: item.latitude + latOffset,
                     longitude: item.longitude + lngOffset,
+                    clusterCount: count,
                 });
             });
         }
@@ -301,6 +302,9 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
             el.className = `group relative cursor-pointer z-${isSelected ? '30' : '10'}`;
 
             const iconSvg = getStatusSvgIcon(item.status);
+            const clusterBadgeHtml = item.clusterCount && item.clusterCount > 1
+                ? `<span class="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900/90 dark:bg-zinc-100 dark:text-zinc-900 px-1 text-[10px] font-extrabold text-white dark:text-zinc-950 ring-1.5 ring-white dark:ring-zinc-950 shadow-md pointer-events-none">${item.clusterCount}</span>`
+                : '';
 
             el.innerHTML = `
                 <div class="relative flex items-center justify-center">
@@ -319,6 +323,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                         status.hex
                     }">
                         ${iconSvg}
+                        ${clusterBadgeHtml}
                     </div>
                 </div>
             `;
