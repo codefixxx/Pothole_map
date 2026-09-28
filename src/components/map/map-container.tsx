@@ -21,6 +21,7 @@ interface MapContainerProps {
     onDraggableMarkerMove?: (coords: [number, number]) => void;
     className?: string;
     showControls?: boolean;
+    modeSwitcherPosition?: 'top-left' | 'bottom-left' | 'top-right' | 'bottom-right';
     interactive?: boolean;
     jurisdictionPolygon?: any;
 }
@@ -99,6 +100,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         onDraggableMarkerMove,
         className = 'w-full h-full min-h-[400px]',
         showControls = true,
+        modeSwitcherPosition = 'bottom-left',
         interactive = true,
         jurisdictionPolygon,
     },
@@ -400,7 +402,15 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
             
             {/* Map Layer Mode Switcher Pill */}
             {showControls && mapLoaded && (
-                <div className="absolute top-3 left-3 z-20 flex items-center rounded-lg bg-background/90 p-1 shadow-md backdrop-blur-md border border-border">
+                <div
+                    className={cn(
+                        'absolute z-20 flex items-center rounded-lg bg-background/90 p-1 shadow-md backdrop-blur-md border border-border',
+                        modeSwitcherPosition === 'top-left' && 'top-3 left-3',
+                        modeSwitcherPosition === 'bottom-left' && 'bottom-3 left-3 sm:bottom-4 sm:left-4',
+                        modeSwitcherPosition === 'top-right' && 'top-3 right-12 sm:right-14',
+                        modeSwitcherPosition === 'bottom-right' && 'bottom-3 right-3 sm:bottom-4 sm:right-4'
+                    )}
+                >
                     <button
                         type="button"
                         onClick={() => setMapMode('street')}

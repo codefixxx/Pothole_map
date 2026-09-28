@@ -407,9 +407,9 @@ export default function MapPage() {
 
             {/* Main Content Area */}
             <div className="relative flex flex-1 overflow-hidden">
-                {/* Collapsible List Sidebar */}
+                {/* Collapsible List Sidebar (Overlay on Mobile, Column on Desktop) */}
                 {showSidebar && (
-                    <aside className="z-20 flex w-80 shrink-0 flex-col border-r bg-background/95 backdrop-blur-md transition-all duration-300 sm:w-96">
+                    <aside className="absolute inset-y-0 left-0 z-40 flex w-full max-w-xs shrink-0 flex-col border-r bg-background/95 shadow-2xl backdrop-blur-md transition-all duration-300 sm:relative sm:inset-auto sm:z-20 sm:w-96 sm:max-w-none sm:shadow-none">
                         <div className="flex items-center justify-between border-b px-4 py-3">
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-sm">Nearby Hazards</span>
@@ -441,7 +441,12 @@ export default function MapPage() {
                                     return (
                                         <div
                                             key={m.id}
-                                            onClick={() => handleSelectMarker(m)}
+                                            onClick={() => {
+                                                handleSelectMarker(m);
+                                                if (window.innerWidth < 640) {
+                                                    setShowSidebar(false);
+                                                }
+                                            }}
                                             className={`group relative flex cursor-pointer gap-3 p-3.5 transition-colors hover:bg-accent/40 ${
                                                 isSelected ? 'bg-accent/60 ring-1 ring-primary/20' : ''
                                             }`}
@@ -520,12 +525,13 @@ export default function MapPage() {
                         onMarkerClick={handleSelectMarker}
                         className="h-full w-full rounded-none border-none"
                         showControls={true}
+                        modeSwitcherPosition="bottom-left"
                     />
 
                     {/* Top Floating Filter & Search Bar */}
-                    <div className="absolute top-4 left-4 right-4 z-10 flex flex-wrap items-center gap-2 pointer-events-none sm:left-6 sm:right-auto max-w-4xl">
+                    <div className="absolute top-3 left-3 right-3 z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pointer-events-none sm:top-4 sm:left-6 sm:right-auto max-w-full sm:max-w-4xl">
                         {/* Search Input Box */}
-                        <div className="pointer-events-auto flex items-center rounded-xl border bg-background/95 px-3 py-1.5 shadow-lg backdrop-blur-md sm:w-64">
+                        <div className="pointer-events-auto flex items-center rounded-xl border bg-background/95 px-3 py-1.5 shadow-lg backdrop-blur-md w-full sm:w-64 shrink-0">
                             <Search className="size-3.5 text-muted-foreground shrink-0" />
                             <Input
                                 type="text"
@@ -544,37 +550,39 @@ export default function MapPage() {
                             )}
                         </div>
 
-                        {/* Status Pills */}
-                        <div className="pointer-events-auto flex flex-wrap items-center gap-1 rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md">
-                            {STATUS_FILTERS.map((f) => (
-                                <Button
-                                    key={f.value}
-                                    size="xs"
-                                    variant={activeStatus === f.value ? 'default' : 'ghost'}
-                                    onClick={() => setActiveStatus(f.value)}
-                                    className="h-7 rounded-lg text-[11px] font-medium px-2.5"
-                                >
-                                    {f.label}
-                                </Button>
-                            ))}
-                        </div>
+                        <div className="flex items-center gap-2 max-w-full min-w-0 overflow-hidden">
+                            {/* Horizontally Scrollable Status Pills */}
+                            <div className="pointer-events-auto flex items-center gap-1 overflow-x-auto rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md max-w-full scrollbar-none shrink">
+                                {STATUS_FILTERS.map((f) => (
+                                    <Button
+                                        key={f.value}
+                                        size="xs"
+                                        variant={activeStatus === f.value ? 'default' : 'ghost'}
+                                        onClick={() => setActiveStatus(f.value)}
+                                        className="h-7 rounded-lg text-[11px] font-medium px-2.5 whitespace-nowrap shrink-0"
+                                    >
+                                        {f.label}
+                                    </Button>
+                                ))}
+                            </div>
 
-                        {/* Locate Me Floating Action */}
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handleLocateMe}
-                            disabled={isLocating}
-                            className="pointer-events-auto size-9 rounded-xl border bg-background/95 shadow-lg backdrop-blur-md hover:bg-accent"
-                            title="Center on my location"
-                        >
-                            <Navigation className={`size-4 text-primary ${isLocating ? 'animate-spin' : ''}`} />
-                        </Button>
+                            {/* Locate Me Floating Action */}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleLocateMe}
+                                disabled={isLocating}
+                                className="pointer-events-auto size-9 rounded-xl border bg-background/95 shadow-lg backdrop-blur-md hover:bg-accent shrink-0"
+                                title="Center on my location"
+                            >
+                                <Navigation className={`size-4 text-primary ${isLocating ? 'animate-spin' : ''}`} />
+                            </Button>
 
-                        {/* Hazards Counter Badge */}
-                        <div className="pointer-events-auto hidden sm:flex items-center gap-1.5 rounded-xl border bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md text-xs">
-                            <span className="font-semibold text-primary">{filteredMarkers.length}</span>
-                            <span className="text-muted-foreground">hazards mapped</span>
+                            {/* Hazards Counter Badge */}
+                            <div className="pointer-events-auto hidden md:flex items-center gap-1.5 rounded-xl border bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md text-xs shrink-0">
+                                <span className="font-semibold text-primary">{filteredMarkers.length}</span>
+                                <span className="text-muted-foreground">hazards</span>
+                            </div>
                         </div>
                     </div>
 
@@ -600,7 +608,7 @@ export default function MapPage() {
 
                     {/* Selected Pothole Preview Card */}
                     {selectedMarker && (
-                        <div className="absolute bottom-6 right-4 left-4 z-30 mx-auto max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-200 sm:right-6 sm:left-auto sm:w-96">
+                        <div className="absolute bottom-3 right-3 left-3 z-30 mx-auto max-w-full animate-in fade-in slide-in-from-bottom-5 duration-200 sm:bottom-6 sm:right-6 sm:left-auto sm:w-96 sm:max-w-sm">
                             <Card className="border-border/80 bg-background/98 shadow-2xl backdrop-blur-xl">
                                 <CardHeader className="relative pb-2">
                                     <button
