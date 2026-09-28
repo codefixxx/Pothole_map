@@ -96,7 +96,7 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
 
             {/* Dashboard Navigation Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full max-w-4xl">
+                <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full max-w-4xl h-auto p-1 gap-1">
                     <TabsTrigger value="overview" className="gap-2 text-xs">
                         <Activity className="size-3.5" />
                         Overview
@@ -113,7 +113,7 @@ export function AdminDashboardView({ userName = 'Super Admin' }: AdminDashboardV
                         <Globe className="size-3.5" />
                         Jurisdictions
                     </TabsTrigger>
-                    <TabsTrigger value="audit" className="gap-2 text-xs">
+                    <TabsTrigger value="audit" className="gap-2 text-xs col-span-2 sm:col-span-1">
                         <ShieldAlert className="size-3.5" />
                         Audit Logs
                     </TabsTrigger>

@@ -100,7 +100,7 @@ async function main() {
         potholeId: pothole.id,
         officerId: officer.id,
         actorId: manager.id,
-        notes: 'Assigned to Sector 4 Repair Team.',
+        actorRole: 'USER',
     });
     console.log('Officer assigned.\n');
 
