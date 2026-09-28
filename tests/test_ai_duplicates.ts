@@ -11,8 +11,8 @@ async function main() {
 
     const citizenEmail = 'ai.citizen.dup@pothole.in';
     const munName = 'AI Duplicate City';
-    const centerLat = 12.9716;
-    const centerLng = 77.5946;
+    const centerLat = 15.9876;
+    const centerLng = 75.5432;
 
     // 1. Cleanup old records
     console.log('Step 1: Cleaning up existing test records...');

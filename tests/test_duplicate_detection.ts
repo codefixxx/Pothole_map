@@ -16,8 +16,8 @@ async function main() {
 
     // Coordinates (Bangalore-ish)
     // 1 arcsecond is ~30 meters. So 0.0001 degrees is ~11 meters.
-    const centerLat = 12.9716;
-    const centerLng = 77.5946;
+    const centerLat = 16.9876;
+    const centerLng = 76.5432;
 
     // 1. Cleanup old records
     console.log('Step 1: Cleaning up existing test records...');
