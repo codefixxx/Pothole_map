@@ -714,6 +714,7 @@ export default function MapPage() {
                         open={isReportOpen}
                         onOpenChange={setIsReportOpen}
                         onReportCreated={handleReportCreated}
+                        initialCoords={selectedMarker ? [selectedMarker.longitude, selectedMarker.latitude] : undefined}
                     />
 
                     {/* Detailed Pothole Inspection Modal */}

@@ -277,7 +277,7 @@ export function ReportModal({
 
             try {
                 setIsCheckingDuplicates(true);
-                const res = await fetch(`/api/potholes/duplicates?lat=${lat}&lng=${lng}&radius=100`);
+                const res = await fetch(`/api/potholes/duplicates?lat=${lat}&lng=${lng}&radius=200`);
                 if (res.ok) {
                     const json = await res.json();
                     if (json.data && Array.isArray(json.data) && json.data.length > 0) {
@@ -293,7 +293,7 @@ export function ReportModal({
             } finally {
                 setIsCheckingDuplicates(false);
             }
-        }, 600);
+        }, 250);
 
         return () => clearTimeout(timer);
     }, [coords, open]);
@@ -437,6 +437,51 @@ export function ReportModal({
                                     Login
                                 </Link>
                             </Button>
+                        </div>
+                    )}
+
+                    {/* Proximity Duplicate Warning Alert */}
+                    {duplicateCandidate && !dismissDuplicateAlert && (
+                        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 space-y-3 animate-in fade-in zoom-in-95 duration-200 ring-2 ring-amber-500/20 shadow-md">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-xs">
+                                    <ShieldAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                    <span>Nearby Hazard Detected ({Math.round(duplicateCandidate.distanceInMeters)}m away)</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setDismissDuplicateAlert(true)}
+                                    className="text-muted-foreground hover:text-foreground"
+                                    aria-label="Dismiss duplicate notice"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            </div>
+
+                            <p className="text-xs text-foreground/90 font-medium line-clamp-2">
+                                &quot;{duplicateCandidate.title}&quot; was previously filed at this location. Confirming an existing report boosts priority with road crews faster than filing a duplicate!
+                            </p>
+
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={handleUpvoteDuplicate}
+                                    className="gap-1.5 text-xs h-8 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-xs"
+                                >
+                                    <ThumbsUp className="size-3.5" />
+                                    <span>Upvote Existing Report Instead</span>
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setDismissDuplicateAlert(true)}
+                                    className="text-xs h-8 text-muted-foreground hover:text-foreground border-amber-500/30"
+                                >
+                                    Report as Separate Hazard
+                                </Button>
+                            </div>
                         </div>
                     )}
 
@@ -588,51 +633,6 @@ export function ReportModal({
                             </span>
                         </div>
                     </div>
-
-                    {/* Proximity Duplicate Warning Alert */}
-                    {duplicateCandidate && !dismissDuplicateAlert && (
-                        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 space-y-2.5 animate-in fade-in zoom-in-95 duration-200">
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-semibold text-xs">
-                                    <ShieldAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                                    <span>Nearby Report Detected ({Math.round(duplicateCandidate.distanceInMeters)}m away)</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setDismissDuplicateAlert(true)}
-                                    className="text-muted-foreground hover:text-foreground"
-                                    aria-label="Dismiss duplicate notice"
-                                >
-                                    <X className="size-3.5" />
-                                </button>
-                            </div>
-
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                                &quot;{duplicateCandidate.title}&quot; was previously filed at this location. Confirming an existing report boosts priority with road crews faster than a duplicate!
-                            </p>
-
-                            <div className="flex items-center gap-2 pt-1">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={handleUpvoteDuplicate}
-                                    className="gap-1.5 text-xs h-7 bg-amber-600 hover:bg-amber-700 text-white font-medium"
-                                >
-                                    <ThumbsUp className="size-3" />
-                                    <span>Upvote Existing Instead</span>
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setDismissDuplicateAlert(true)}
-                                    className="text-xs h-7 text-muted-foreground hover:text-foreground"
-                                >
-                                    Report as Separate Hazard
-                                </Button>
-                            </div>
-                        </div>
-                    )}
 
                     {/* Section 3: Title & Description */}
                     <div className="space-y-3">
