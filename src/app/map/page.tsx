@@ -146,6 +146,7 @@ export default function MapPage() {
     const [activeSeverity, setActiveSeverity] = useState('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [showSidebar, setShowSidebar] = useState(false);
+    const [showFiltersMobile, setShowFiltersMobile] = useState(false);
     const [userVotes, setUserVotes] = useState<Record<string, boolean>>({});
     const [isLocating, setIsLocating] = useState(false);
     const [isReportOpen, setIsReportOpen] = useState(false);
@@ -356,8 +357,8 @@ export default function MapPage() {
     return (
         <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
             {/* Top Navigation Header */}
-            <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b bg-background/85 px-4 backdrop-blur-md sm:px-6">
-                <div className="flex items-center gap-4">
+            <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b bg-background/90 px-3 backdrop-blur-md sm:px-6">
+                <div className="flex items-center gap-3">
                     <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
                         <Logo className="h-7" />
                     </Link>
@@ -375,25 +376,27 @@ export default function MapPage() {
                         variant={showSidebar ? 'secondary' : 'outline'}
                         size="sm"
                         onClick={() => setShowSidebar(!showSidebar)}
-                        className="gap-1.5 h-8 text-xs font-medium"
+                        className="gap-1.5 h-8 px-2.5 sm:px-3 text-xs font-medium"
                     >
                         <ListFilter className="size-3.5" />
                         <span className="hidden sm:inline">{showSidebar ? 'Hide List' : 'Show List'}</span>
+                        <span className="sm:hidden text-[11px] font-semibold">{filteredMarkers.length}</span>
                     </Button>
 
                     <Button
                         size="sm"
                         onClick={() => setIsReportOpen(true)}
-                        className="gap-1.5 h-8 shadow-sm bg-amber-600 hover:bg-amber-700 text-white font-medium"
+                        className="hidden sm:flex gap-1.5 h-8 shadow-sm bg-amber-600 hover:bg-amber-700 text-white font-medium"
                     >
                         <PlusCircle className="size-3.5" />
-                        <span className="hidden sm:inline">Report Pothole</span>
-                        <span className="sm:hidden">Report</span>
+                        <span>Report Pothole</span>
                     </Button>
 
                     <NotificationBell className="size-8" />
 
-                    <ThemeToggle />
+                    <div className="hidden sm:block">
+                        <ThemeToggle />
+                    </div>
 
                     {session?.user ? (
                         <DropdownMenuAvatar imageUrl={session.user.image} name={session.user.name} />
@@ -530,41 +533,40 @@ export default function MapPage() {
 
                     {/* Top Floating Filter & Search Bar */}
                     <div className="absolute top-3 left-3 right-3 z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pointer-events-none sm:top-4 sm:left-6 sm:right-auto max-w-full sm:max-w-4xl">
-                        {/* Search Input Box */}
-                        <div className="pointer-events-auto flex items-center rounded-xl border bg-background/95 px-3 py-1.5 shadow-lg backdrop-blur-md w-full sm:w-64 shrink-0">
-                            <Search className="size-3.5 text-muted-foreground shrink-0" />
-                            <Input
-                                type="text"
-                                placeholder="Search road or keyword..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="h-6 border-none bg-transparent px-2 text-xs focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/70"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
-                                >
-                                    <X className="size-3" />
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-2 max-w-full min-w-0 overflow-hidden">
-                            {/* Horizontally Scrollable Status Pills */}
-                            <div className="pointer-events-auto flex items-center gap-1 overflow-x-auto rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md max-w-full scrollbar-none shrink">
-                                {STATUS_FILTERS.map((f) => (
-                                    <Button
-                                        key={f.value}
-                                        size="xs"
-                                        variant={activeStatus === f.value ? 'default' : 'ghost'}
-                                        onClick={() => setActiveStatus(f.value)}
-                                        className="h-7 rounded-lg text-[11px] font-medium px-2.5 whitespace-nowrap shrink-0"
+                        {/* Search Input Box with Integrated Mobile Filter & Locate Actions */}
+                        <div className="pointer-events-auto flex items-center gap-1 rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md w-full sm:w-72 shrink-0">
+                            <div className="flex flex-1 items-center px-2">
+                                <Search className="size-3.5 text-muted-foreground shrink-0" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search road or keyword..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="h-7 border-none bg-transparent px-2 text-xs focus-visible:ring-0 shadow-none placeholder:text-muted-foreground/70"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
                                     >
-                                        {f.label}
-                                    </Button>
-                                ))}
+                                        <X className="size-3" />
+                                    </button>
+                                )}
                             </div>
+
+                            {/* Mobile Filter Toggle Button */}
+                            <Button
+                                variant={activeStatus !== 'ALL' || showFiltersMobile ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+                                className="sm:hidden h-7 px-2.5 gap-1 text-[11px] font-medium rounded-lg shrink-0"
+                            >
+                                <SlidersHorizontal className="size-3" />
+                                <span>Filter</span>
+                                {activeStatus !== 'ALL' && (
+                                    <span className="size-1.5 rounded-full bg-amber-400 animate-pulse" />
+                                )}
+                            </Button>
 
                             {/* Locate Me Floating Action */}
                             <Button
@@ -572,17 +574,39 @@ export default function MapPage() {
                                 size="icon"
                                 onClick={handleLocateMe}
                                 disabled={isLocating}
-                                className="pointer-events-auto size-9 rounded-xl border bg-background/95 shadow-lg backdrop-blur-md hover:bg-accent shrink-0"
+                                className="size-7 rounded-lg border bg-background/95 shadow-xs hover:bg-accent shrink-0"
                                 title="Center on my location"
                             >
-                                <Navigation className={`size-4 text-primary ${isLocating ? 'animate-spin' : ''}`} />
+                                <Navigation className={`size-3 text-primary ${isLocating ? 'animate-spin' : ''}`} />
                             </Button>
+                        </div>
 
-                            {/* Hazards Counter Badge */}
-                            <div className="pointer-events-auto hidden md:flex items-center gap-1.5 rounded-xl border bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md text-xs shrink-0">
-                                <span className="font-semibold text-primary">{filteredMarkers.length}</span>
-                                <span className="text-muted-foreground">hazards</span>
-                            </div>
+                        {/* Status Filter Pills (Always visible on desktop, Collapsible drawer on mobile) */}
+                        <div
+                            className={`pointer-events-auto flex items-center gap-1 overflow-x-auto rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md max-w-full scrollbar-none transition-all duration-200 ${
+                                showFiltersMobile ? 'flex max-w-full animate-in fade-in slide-in-from-top-2' : 'hidden sm:flex'
+                            }`}
+                        >
+                            {STATUS_FILTERS.map((f) => (
+                                <Button
+                                    key={f.value}
+                                    size="xs"
+                                    variant={activeStatus === f.value ? 'default' : 'ghost'}
+                                    onClick={() => {
+                                        setActiveStatus(f.value);
+                                        setShowFiltersMobile(false);
+                                    }}
+                                    className="h-7 rounded-lg text-[11px] font-medium px-2.5 whitespace-nowrap shrink-0"
+                                >
+                                    {f.label}
+                                </Button>
+                            ))}
+                        </div>
+
+                        {/* Hazards Counter Badge */}
+                        <div className="pointer-events-auto hidden md:flex items-center gap-1.5 rounded-xl border bg-background/90 px-3 py-1.5 shadow-md backdrop-blur-md text-xs shrink-0">
+                            <span className="font-semibold text-primary">{filteredMarkers.length}</span>
+                            <span className="text-muted-foreground">hazards mapped</span>
                         </div>
                     </div>
 

@@ -390,7 +390,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     }, [draggableMarkerCoord, mapLoaded, onDraggableMarkerMove]);
 
     return (
-        <div className={cn('relative overflow-hidden rounded-xl border w-full h-full min-h-[400px]', className)}>
+        <div className={cn('relative overflow-hidden rounded-xl border w-full h-full min-h-[400px] [&_.maplibregl-ctrl-top-right]:mt-16 [&_.maplibregl-ctrl-top-right]:sm:mt-2', className)}>
             {!mapLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted/40 backdrop-blur-xs z-10">
                     <div className="flex flex-col items-center gap-3">
@@ -406,9 +406,9 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                     className={cn(
                         'absolute z-20 flex items-center rounded-lg bg-background/90 p-1 shadow-md backdrop-blur-md border border-border',
                         modeSwitcherPosition === 'top-left' && 'top-3 left-3',
-                        modeSwitcherPosition === 'bottom-left' && 'bottom-3 left-3 sm:bottom-4 sm:left-4',
+                        modeSwitcherPosition === 'bottom-left' && 'bottom-4 left-3 sm:bottom-6 sm:left-6',
                         modeSwitcherPosition === 'top-right' && 'top-3 right-12 sm:right-14',
-                        modeSwitcherPosition === 'bottom-right' && 'bottom-3 right-3 sm:bottom-4 sm:right-4'
+                        modeSwitcherPosition === 'bottom-right' && 'bottom-4 right-3 sm:bottom-6 sm:right-4'
                     )}
                 >
                     <button
