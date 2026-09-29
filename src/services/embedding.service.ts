@@ -17,18 +17,20 @@ export async function generateImageEmbedding(imageUrl: string): Promise<number[]
     }
 
     try {
-        const { pipeline } = await import('@xenova/transformers');
+        const { pipeline, RawImage } = await import('@xenova/transformers');
         if (!extractor) {
             console.log('[Embedding Service] Loading Xenova/clip-vit-base-patch32 model...');
-            // Note: By default, xenova/transformers stores downloaded models in a local cache directory (.cache)
-            extractor = await pipeline('feature-extraction', 'Xenova/clip-vit-base-patch32');
+            extractor = await pipeline('image-feature-extraction', 'Xenova/clip-vit-base-patch32');
         }
 
         console.log(`[Embedding Service] Extracting visual features from: ${imageUrl}`);
-        const output = await extractor(imageUrl, { pooling: 'mean', normalize: true });
+        const image = await RawImage.read(imageUrl);
+        const output = await extractor(image, { pooling: 'mean', normalize: true });
         
         // output.data is Float32Array
-        const embedding = Array.from(output.data) as number[];
+        const rawEmbedding = Array.from(output.data) as number[];
+        const magnitude = Math.sqrt(rawEmbedding.reduce((sum, val) => sum + val * val, 0));
+        const embedding = rawEmbedding.map(val => val / (magnitude || 1));
         return embedding;
     } catch (error) {
         console.error('[Embedding Service] Local embedding generation failed, falling back to mock:', error);

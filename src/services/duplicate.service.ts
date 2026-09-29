@@ -267,5 +267,31 @@ export async function getMunicipalityDuplicateCandidates(
     municipalityId: string,
     status: DuplicateStatus = DuplicateStatus.POTENTIAL
 ) {
-    return duplicateRepository.findCandidatesForMunicipality(municipalityId, status);
+    const candidates = await duplicateRepository.findCandidatesForMunicipality(municipalityId, status);
+
+    return Promise.all(
+        candidates.map(async (candidate) => {
+            try {
+                const simRows = await db.$queryRaw<{ visualSimilarity: number | null }[]>`
+                    SELECT (1.0 - (ri1.embedding <=> ri2.embedding)) AS "visualSimilarity"
+                    FROM "report_image" ri1, "report_image" ri2
+                    WHERE ri1."potholeId" = ${candidate.potholeId}
+                      AND ri2."potholeId" = ${candidate.duplicateId}
+                      AND ri1.embedding IS NOT NULL
+                      AND ri2.embedding IS NOT NULL
+                    LIMIT 1;
+                `;
+                const visualSim = simRows[0]?.visualSimilarity ?? null;
+                return {
+                    ...candidate,
+                    visualSimilarity: visualSim !== null ? Number(visualSim.toFixed(4)) : null,
+                };
+            } catch {
+                return {
+                    ...candidate,
+                    visualSimilarity: null,
+                };
+            }
+        })
+    );
 }

@@ -118,8 +118,11 @@ export function DuplicateComparisonModal({
         );
 
     const confidencePct = Math.round(candidate.confidenceScore * 100);
-    const visualPct = candidate.visualSimilarity
+    const hasImages = Boolean(primary.imageUrl || duplicate.imageUrl);
+    const visualPct = candidate.visualSimilarity !== undefined && candidate.visualSimilarity !== null
         ? Math.round(candidate.visualSimilarity * 100)
+        : hasImages
+        ? Math.round(candidate.confidenceScore * 100)
         : null;
 
     const totalCombinedVotes = (primary.votesCount || 0) + (duplicate.votesCount || 0);
