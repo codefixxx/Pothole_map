@@ -121,7 +121,7 @@ async function main() {
         userId: citizenUser.id,
         severity: 3,
         locationSource: LocationSource.GPS,
-        image: { storageKey: 'img-a', url: 'img-a.jpg' },
+        image: { storageKey: 'img-a' },
     });
 
     const potholeB = await createPothole({
@@ -132,7 +132,7 @@ async function main() {
         userId: citizenUser.id,
         severity: 3,
         locationSource: LocationSource.GPS,
-        image: { storageKey: 'img-b', url: 'img-b.jpg' },
+        image: { storageKey: 'img-b' },
     });
 
     const potholeC = await createPothole({
@@ -143,7 +143,7 @@ async function main() {
         userId: citizenUser.id,
         severity: 3,
         locationSource: LocationSource.GPS,
-        image: { storageKey: 'img-c', url: 'img-c.jpg' },
+        image: { storageKey: 'img-c' },
     });
 
     const imageA = await db.reportImage.findFirstOrThrow({ where: { potholeId: potholeA.id } });
@@ -155,11 +155,12 @@ async function main() {
     // B: [0.95, 0.05, 0, ..., 0] (very high similarity: cosine similarity will be ~0.95)
     // C: [0, 1, 0, ..., 0] (orthogonal: similarity will be ~0.0)
     
-    const rawB = Array.from({ length: 512 }, (_, i) => (i === 0 ? 0.95 : i === 1 ? 0.05 : 0.0));
+    const rawB: number[] = Array.from({ length: 512 }, (_, i) => (i === 0 ? 0.95 : i === 1 ? 0.05 : 0.0));
     const magB = Math.sqrt(rawB.reduce((s, v) => s + v * v, 0));
     const embeddingA = Array.from({ length: 512 }, (_, i) => (i === 0 ? 1.0 : 0.0));
     const embeddingB = rawB.map(v => v / magB);
     const embeddingC = Array.from({ length: 512 }, (_, i) => (i === 1 ? 1.0 : 0.0));
+
 
     await db.$executeRawUnsafe(`UPDATE "report_image" SET "embedding" = '[${embeddingA.join(',')}]'::vector WHERE "id" = '${imageA.id}'`);
     await db.$executeRawUnsafe(`UPDATE "report_image" SET "embedding" = '[${embeddingB.join(',')}]'::vector WHERE "id" = '${imageB.id}'`);
