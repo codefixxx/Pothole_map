@@ -2,6 +2,7 @@
 
 import { Camera, X, Loader2, CheckCircle2, ShieldCheck, User, Mail, ArrowLeft, Building2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUploadThing } from '@/src/lib/uploadthing';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -55,6 +56,7 @@ const SettingsProfile = ({
     onSave,
     className,
 }: SettingsProfileProps) => {
+    const router = useRouter();
     const [cropImage, setCropImage] = useState<string | null>(null);
     const [showCrop, setShowCrop] = useState(false);
 
@@ -97,12 +99,7 @@ const SettingsProfile = ({
     };
 
     const handleCancel = () => {
-        setName(defaultValues.name ?? '');
-        setAvatarFiles([]);
-        setAvatarPreview(defaultValues.avatar);
-        setImgLoaded(false);
-        setCropImage(null);
-        setShowCrop(false);
+        router.push('/map');
     };
 
     const handleSave = async () => {
@@ -164,6 +161,7 @@ const SettingsProfile = ({
             }
 
             toast.success('Profile updated successfully!');
+            router.refresh();
 
             onSave?.({
                 name,
