@@ -1,38 +1,64 @@
 import React from 'react';
 import { InfiniteSlider, ProgressiveBlur, ScrollAppear } from '@/src/components/motion';
+import {
+    MapPin,
+    ShieldCheck,
+    Layers,
+    Sparkles,
+    ThumbsUp,
+    Building2,
+    Bell,
+    Globe,
+} from 'lucide-react';
 
-const TECH_STANDARDS = [
+const PLATFORM_CAPABILITIES = [
     {
-        name: 'OpenStreetMap',
-        logo: '/logo/OpenStreetMap.svg',
-        desc: 'Open Mapping Data',
+        title: 'Instant GPS Acquisition',
+        subtitle: '1-Click Location & Photo Capture',
+        icon: MapPin,
+        iconColor: 'text-amber-500 bg-amber-500/10',
     },
     {
-        name: 'MapLibre GL JS',
-        logo: '/logo/Maplibre.svg',
-        desc: 'Vector Map Engine',
+        title: 'PostGIS Polygon Routing',
+        subtitle: 'Automated Municipal Boundary Match',
+        icon: ShieldCheck,
+        iconColor: 'text-emerald-500 bg-emerald-500/10',
     },
     {
-        name: 'PostgreSQL & PostGIS',
-        logo: '/logo/Postgresql.svg',
-        desc: 'Spatial Containment',
+        title: 'State Machine Audit',
+        subtitle: 'Strict Status Lifecycle Progression',
+        icon: Layers,
+        iconColor: 'text-purple-500 bg-purple-500/10',
     },
     {
-        name: 'Next.js 15',
-        logo: '/logo/Nextjs.svg',
-        desc: 'React App Framework',
-        invertDark: true,
+        title: 'AI Duplicate Merging',
+        subtitle: 'Proximity & Visual Consolidation',
+        icon: Sparkles,
+        iconColor: 'text-blue-500 bg-blue-500/10',
     },
     {
-        name: 'TypeScript',
-        logo: '/logo/Typescript.svg',
-        desc: 'Strict Type Safety',
+        title: 'Commuter Upvotes',
+        subtitle: 'Crowdsourced Hazard Confirmation',
+        icon: ThumbsUp,
+        iconColor: 'text-sky-500 bg-sky-500/10',
     },
     {
-        name: 'Shadcn UI',
-        logo: '/logo/Shadcnui.svg',
-        desc: 'Accessible Primitives',
-        invertDark: true,
+        title: 'Municipal Triage Queue',
+        subtitle: 'Officer Workflow & Reassignment',
+        icon: Building2,
+        iconColor: 'text-indigo-500 bg-indigo-500/10',
+    },
+    {
+        title: 'Realtime Status Alerts',
+        subtitle: 'In-App & Email Event Stream',
+        icon: Bell,
+        iconColor: 'text-rose-500 bg-rose-500/10',
+    },
+    {
+        title: 'Vector Map Engine',
+        subtitle: 'GPU-Accelerated MapLibre Rendering',
+        icon: Globe,
+        iconColor: 'text-teal-500 bg-teal-500/10',
     },
 ];
 
@@ -42,33 +68,34 @@ export const LogoCloud = () => {
             <div className="group relative m-auto max-w-6xl px-6">
                 <div className="flex flex-col items-center md:flex-row">
                     <div className="inline md:max-w-44 md:border-r md:pr-6 mb-4 md:mb-0">
-                        <p className="text-center md:text-end text-xs font-semibold uppercase tracking-wider text-muted-foreground/90 leading-snug">
-                            Powered by Open Data & Standard Tech Stack
+                        <p className="text-center md:text-end text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/90 leading-snug">
+                            Platform Capabilities & Civic Workflows
                         </p>
                     </div>
 
                     <div className="relative py-4 md:w-[calc(100%-11rem)]">
-                        <InfiniteSlider speedOnHover={120} speed={40} gap={64}>
-                            {TECH_STANDARDS.map((tech, i) => (
-                                <div
-                                    key={i}
-                                    className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card/60 px-3.5 py-2 shadow-xs backdrop-blur-xs hover:border-primary/40 transition-colors"
-                                >
-                                    <img
-                                        src={tech.logo}
-                                        alt={tech.name}
-                                        className={`h-6 w-auto object-contain ${tech.invertDark ? 'dark:invert' : ''}`}
-                                    />
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-semibold text-foreground whitespace-nowrap">
-                                            {tech.name}
-                                        </span>
-                                        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                                            {tech.desc}
-                                        </span>
+                        <InfiniteSlider speedOnHover={120} speed={40} gap={32}>
+                            {PLATFORM_CAPABILITIES.map((cap, i) => {
+                                const IconComponent = cap.icon;
+                                return (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/80 px-4 py-2.5 shadow-xs backdrop-blur-xs hover:border-primary/40 hover:bg-card transition-all"
+                                    >
+                                        <div className={`p-2 rounded-lg shrink-0 ${cap.iconColor}`}>
+                                            <IconComponent className="size-4" />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-foreground whitespace-nowrap">
+                                                {cap.title}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                                {cap.subtitle}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </InfiniteSlider>
 
                         <div className="bg-gradient-to-r from-background absolute inset-y-0 left-0 w-16 pointer-events-none"></div>
