@@ -22,7 +22,6 @@ export const GET = asyncHandler(async (req: Request) => {
                   OR: [
                       { name: { contains: query, mode: 'insensitive' } },
                       { email: { contains: query, mode: 'insensitive' } },
-                      { username: { contains: query, mode: 'insensitive' } },
                   ],
               }
             : {},
@@ -31,7 +30,6 @@ export const GET = asyncHandler(async (req: Request) => {
             id: true,
             name: true,
             email: true,
-            username: true,
             role: true,
             image: true,
             emailVerified: true,

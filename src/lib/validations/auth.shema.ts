@@ -37,16 +37,6 @@ export const updateProfileSchema = z.object({
         .max(50, 'Name must be less than 50 characters')
         .regex(/^[a-zA-Z\s'-]+$/, 'Name contains invalid characters')
         .optional(),
-
-    username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(25, 'Username must be less than 25 characters')
-    .regex(
-        /^[a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9]$/,
-        'Username should start with a letter; end with a letter or number; only letters, numbers, _ or -'
-    )
-    .optional(),
 });
 
 export const resetPasswordSchema = z

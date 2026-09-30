@@ -18,7 +18,6 @@ import {
     UserRoundPen,
     LayoutDashboard,
     BellIcon,
-    CreditCardIcon,
     LogOutIcon,
     Building2,
 } from 'lucide-react';
@@ -120,11 +119,6 @@ export function DropdownMenuAvatar({
                             <UserRoundPen className="size-4" />
                             <span>Profile</span>
                         </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem className="flex items-center gap-2">
-                        <CreditCardIcon className="size-4" />
-                        Billing
                     </DropdownMenuItem>
 
                     <DropdownMenuItem

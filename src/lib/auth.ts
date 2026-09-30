@@ -5,7 +5,6 @@ import { nextCookies } from 'better-auth/next-js';
 import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { getValidDomains, normalizeName } from './utils';
 import { sendEmail } from './nodemailer';
-import { generateUniqueUsername } from './username';
 
 export const auth = betterAuth({
     database: prismaAdapter(db, {
@@ -79,11 +78,6 @@ export const auth = betterAuth({
     },
     user: {
         additionalFields: {
-            username: {
-                type: 'string',
-                required: false,
-                input: false, // never from client
-            },
             role: {
                 type: ['USER', 'ADMIN'],
                 required: true,
@@ -95,18 +89,6 @@ export const auth = betterAuth({
                 required: true,
                 input: false,
                 defaultValue: false,
-            },
-        },
-    },
-    databaseHooks: {
-        user: {
-            create: {
-                before: async (user) => {
-                    const username = await generateUniqueUsername(
-                        user.name ?? 'user',
-                    );
-                    return { data: { ...user, username } };
-                },
             },
         },
     },

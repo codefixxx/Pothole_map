@@ -1,9 +1,10 @@
 'use client';
 
-import { Camera, X, Loader2 } from 'lucide-react';
+import { Camera, X, Loader2, CheckCircle2, ShieldCheck, User, Mail, ArrowLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUploadThing } from '@/src/lib/uploadthing';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 import {
     FileUpload,
@@ -18,6 +19,7 @@ import {
     AvatarImage,
 } from '@/src/components/ui/avatar';
 import { Button } from '@/src/components/ui/button';
+import { Badge } from '@/src/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -33,9 +35,11 @@ import imageCompression from 'browser-image-compression';
 import { getCroppedImg } from './cropimage';
 import AvatarCropper from './avatar-cropper';
 
-interface ProfileFormData {
+export interface ProfileFormData {
     name: string;
-    username: string;
+    email?: string;
+    role?: string;
+    emailVerified?: boolean;
     avatar?: string;
 }
 
@@ -44,8 +48,6 @@ interface SettingsProfileProps {
     onSave?: (data: ProfileFormData) => void;
     className?: string;
 }
-
-type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken';
 
 const SettingsProfile = ({
     defaultValues = {},
@@ -56,9 +58,9 @@ const SettingsProfile = ({
     const [showCrop, setShowCrop] = useState(false);
 
     const [name, setName] = useState(defaultValues.name ?? '');
-    const [username, setUsername] = useState(defaultValues.username ?? '');
-    const [usernameStatus, setUsernameStatus] =
-        useState<UsernameStatus>('idle');
+    const userEmail = defaultValues.email ?? '';
+    const userRole = defaultValues.role ?? 'USER';
+    const isEmailVerified = defaultValues.emailVerified ?? false;
 
     const [avatarFiles, setAvatarFiles] = useState<File[]>([]);
     const [avatarPreview, setAvatarPreview] = useState<string | undefined>(
@@ -82,29 +84,6 @@ const SettingsProfile = ({
         return () => URL.revokeObjectURL(objectUrl);
     }, [avatarFiles]);
 
-    useEffect(() => {
-        if (!username || username === defaultValues.username) {
-            setUsernameStatus('idle');
-            return;
-        }
-
-        setUsernameStatus('checking');
-
-        const timeout = setTimeout(async () => {
-            try {
-                const res = await fetch(
-                    `/api/check-username?username=${username}`,
-                );
-                const data = await res.json();
-                setUsernameStatus(data.available ? 'available' : 'taken');
-            } catch {
-                setUsernameStatus('idle');
-            }
-        }, 500);
-
-        return () => clearTimeout(timeout);
-    }, [username, defaultValues.username]);
-
     const handleCropDone = async (croppedArea: any) => {
         if (!cropImage) return;
 
@@ -117,7 +96,6 @@ const SettingsProfile = ({
 
     const handleCancel = () => {
         setName(defaultValues.name ?? '');
-        setUsername(defaultValues.username ?? '');
         setAvatarFiles([]);
         setAvatarPreview(defaultValues.avatar);
         setImgLoaded(false);
@@ -166,23 +144,30 @@ const SettingsProfile = ({
                 setImgLoaded(false);
             }
 
-            if (avatarUrl && avatarUrl !== defaultValues.avatar) {
-                const res = await fetch('/api/user/profile', {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ avatarUrl }),
-                });
+            // Update user profile name and/or avatar via real API
+            const res = await fetch('/api/user/profile', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name !== defaultValues.name ? name : undefined,
+                    avatarUrl: avatarUrl !== defaultValues.avatar ? avatarUrl : undefined,
+                }),
+            });
 
-                if (!res.ok) {
-                    throw new Error('Failed to update avatar');
-                }
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to update profile');
             }
+
+            toast.success('Profile updated successfully!');
 
             onSave?.({
                 name,
-                username,
+                email: userEmail,
+                role: userRole,
+                emailVerified: isEmailVerified,
                 avatar: avatarUrl,
             });
         } catch (err: any) {
@@ -193,30 +178,46 @@ const SettingsProfile = ({
         }
     };
 
-    const initials = (name || '')
+    const initials = (name || userEmail || 'U')
         .split(' ')
         .map((n: string) => n[0])
         .join('')
-        .toUpperCase();
+        .toUpperCase()
+        .slice(0, 2);
 
     const avatarSrc = avatarPreview;
 
     const isUnchanged =
-        name === defaultValues.name &&
-        username === defaultValues.username &&
-        avatarFiles.length === 0;
+        name === defaultValues.name && avatarFiles.length === 0;
+
+    const formattedRole = userRole === 'ADMIN'
+        ? 'Super Admin / Manager'
+        : userRole === 'OFFICER'
+        ? 'Municipal Patrol Officer'
+        : 'Civic Reporter';
 
     return (
         <>
-            <Card className={cn('w-full max-w-lg', className)}>
-                <CardHeader>
-                    <CardTitle>Profile</CardTitle>
-                    <CardDescription>
-                        Update your personal information and profile picture
-                    </CardDescription>
+            <Card className={cn('w-full max-w-lg shadow-xl border-border/80 bg-card', className)}>
+                <CardHeader className="relative pb-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-xl font-bold">Account Profile</CardTitle>
+                            <CardDescription className="text-xs">
+                                Manage your personal account details and profile photo
+                            </CardDescription>
+                        </div>
+                        <Button asChild variant="ghost" size="sm" className="gap-1 text-xs">
+                            <Link href="/map">
+                                <ArrowLeft className="size-3.5" />
+                                <span>Map</span>
+                            </Link>
+                        </Button>
+                    </div>
                 </CardHeader>
 
                 <CardContent className="space-y-6">
+                    {/* Avatar Upload Section */}
                     <FileUpload
                         key="upload"
                         value={avatarFiles}
@@ -232,7 +233,7 @@ const SettingsProfile = ({
                                 setShowCrop(true);
                             }, 0);
                         }}
-                        onFileReject={(files) => {
+                        onFileReject={() => {
                             toast.error('Image must be less than 2MB');
                             setCropImage(null);
                             setShowCrop(false);
@@ -253,20 +254,16 @@ const SettingsProfile = ({
                                             <AvatarImage
                                                 src={avatarSrc}
                                                 alt={name}
-                                                onLoad={() =>
-                                                    setImgLoaded(true)
-                                                }
+                                                onLoad={() => setImgLoaded(true)}
                                                 className={`object-cover object-center transition-opacity duration-300 ${
-                                                    imgLoaded
-                                                        ? 'opacity-100'
-                                                        : 'opacity-0'
+                                                    imgLoaded ? 'opacity-100' : 'opacity-0'
                                                 }`}
                                             />
                                         )}
 
                                         <AvatarFallback
                                             delayMs={imgLoaded ? 999999 : 200}
-                                            className="bg-gradient-to-br from-gray-300 to-gray-500 text-white text-xl font-semibold"
+                                            className="bg-gradient-to-br from-amber-500 to-amber-700 text-white text-xl font-bold"
                                         >
                                             {initials}
                                         </AvatarFallback>
@@ -283,14 +280,12 @@ const SettingsProfile = ({
                             </FileUploadTrigger>
 
                             <div className="space-y-1">
-                                <p className="text-sm font-medium">
-                                    Profile Photo
-                                </p>
+                                <p className="text-sm font-semibold">Profile Photo</p>
                                 <p className="text-xs text-muted-foreground">
-                                    Click the avatar to upload a new photo
+                                    Click avatar to upload & crop a new picture
                                 </p>
-                                <p className="text-xs text-muted-foreground">
-                                    JPG, PNG or GIF. Max 2MB.
+                                <p className="text-[11px] text-muted-foreground/80">
+                                    Supports JPG, PNG or WebP (Max 2MB)
                                 </p>
                             </div>
                         </div>
@@ -304,12 +299,11 @@ const SettingsProfile = ({
                                         className="rounded-lg border bg-muted/30 p-2"
                                     >
                                         <div className="min-w-0 flex-1">
-                                            <p className="truncate text-sm font-medium">
+                                            <p className="truncate text-xs font-medium">
                                                 {file.name}
                                             </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {(file.size / 1024).toFixed(1)}{' '}
-                                                KB
+                                            <p className="text-[10px] text-muted-foreground">
+                                                {(file.size / 1024).toFixed(1)} KB
                                             </p>
                                         </div>
 
@@ -317,18 +311,16 @@ const SettingsProfile = ({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="size-8"
-                                                onClick={(e) => {
+                                                className="size-7"
+                                                onClick={() => {
                                                     setAvatarFiles([]);
-                                                    setAvatarPreview(
-                                                        defaultValues.avatar,
-                                                    );
+                                                    setAvatarPreview(defaultValues.avatar);
                                                     setImgLoaded(false);
                                                     setCropImage(null);
                                                     setShowCrop(false);
                                                 }}
                                             >
-                                                <X className="size-4" />
+                                                <X className="size-3.5" />
                                             </Button>
                                         </FileUploadItemDelete>
                                     </FileUploadItem>
@@ -337,58 +329,87 @@ const SettingsProfile = ({
                         )}
                     </FileUpload>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
+                    {/* Inputs */}
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name" className="text-xs font-semibold flex items-center gap-1.5">
+                                <User className="size-3.5 text-muted-foreground" />
+                                <span>Full Name</span>
+                            </Label>
                             <Input
                                 id="name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
+                                placeholder="Enter your full name"
+                                className="h-9 text-xs"
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
+                        {userEmail && (
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="email" className="text-xs font-semibold flex items-center gap-1.5">
+                                        <Mail className="size-3.5 text-muted-foreground" />
+                                        <span>Email Address</span>
+                                    </Label>
+                                    {isEmailVerified ? (
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                                            <CheckCircle2 className="size-3" />
+                                            Verified
+                                        </span>
+                                    ) : (
+                                        <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                                            Unverified
+                                        </span>
+                                    )}
+                                </div>
+                                <Input
+                                    id="email"
+                                    value={userEmail}
+                                    readOnly
+                                    disabled
+                                    className="h-9 text-xs bg-muted/50 cursor-not-allowed text-muted-foreground"
+                                />
+                            </div>
+                        )}
 
-                            {usernameStatus === 'checking' && (
-                                <p className="text-xs text-muted-foreground">
-                                    Checking...
-                                </p>
-                            )}
-                            {usernameStatus === 'available' && (
-                                <p className="text-xs text-green-500">
-                                    ✓ Username is available
-                                </p>
-                            )}
-                            {usernameStatus === 'taken' && (
-                                <p className="text-xs text-red-500">
-                                    ✗ Username is already taken
-                                </p>
-                            )}
+                        {/* Role & Context Card */}
+                        <div className="rounded-xl border bg-muted/40 p-3.5 space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                    <ShieldCheck className="size-3.5 text-primary" />
+                                    <span>Civic Platform Status</span>
+                                </span>
+                                <Badge variant="secondary" className="text-[10px] font-mono">
+                                    {formattedRole}
+                                </Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Your account is enabled for instant GPS road hazard reporting, upvoting community issues, and receiving live status resolution notifications.
+                            </p>
                         </div>
                     </div>
                 </CardContent>
 
-                <CardFooter className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={handleCancel}>
+                <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                    <Button variant="outline" size="sm" onClick={handleCancel} disabled={isSaving} className="h-9 text-xs">
                         Cancel
                     </Button>
 
                     <Button
+                        size="sm"
                         onClick={handleSave}
-                        disabled={
-                            isSaving ||
-                            isUnchanged ||
-                            usernameStatus === 'taken' ||
-                            usernameStatus === 'checking'
-                        }
+                        disabled={isSaving || isUnchanged}
+                        className="h-9 text-xs font-semibold px-5"
                     >
-                        {isSaving ? 'Saving...' : 'Save Changes'}
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="size-3.5 animate-spin mr-1.5" />
+                                <span>Saving...</span>
+                            </>
+                        ) : (
+                            'Save Changes'
+                        )}
                     </Button>
                 </CardFooter>
             </Card>
