@@ -48,6 +48,7 @@ next-env.d.ts
 .agents/
 GEMINI.md
 
-# local test scripts
+# local test scripts & scratch directory
 tests/test_*_db.ts
+scratch/
 
