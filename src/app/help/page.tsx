@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import { Logo, ThemeToggle, Footer, CtaSection } from '@/src/components/layout';
 import { Button } from '@/src/components/ui/button';
 import { Badge } from '@/src/components/ui/badge';
+import { ContactForm } from '@/src/components/help/contact-form';
 import { HelpCircle, MapPin, ThumbsUp, Activity, ShieldCheck, ArrowLeft, ChevronRight, Layers, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -127,6 +128,9 @@ export default function HelpPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Direct Inquiry & Complaint Form Section */}
+                <ContactForm />
 
                 {/* Call-to-Action Banner */}
                 <CtaSection />

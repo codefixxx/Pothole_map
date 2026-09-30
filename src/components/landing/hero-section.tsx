@@ -46,7 +46,7 @@ export default function HeroSection() {
                         <div className="mx-auto max-w-3xl text-center space-y-6">
                             <Badge variant="outline" className="px-3.5 py-1 text-xs gap-2 border-primary/30 text-primary bg-primary/10 rounded-full inline-flex items-center">
                                 <Sparkles className="size-3.5 text-amber-500 animate-pulse" />
-                                <span>Real-Time Civic Infrastructure Platform</span>
+                                <span>Civic Infrastructure & Live Status Tracking</span>
                             </Badge>
 
                             <TextEffect
@@ -55,7 +55,7 @@ export default function HeroSection() {
                                 as="h1"
                                 className="text-balance text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl leading-[1.1]"
                             >
-                                Report & Track Road Hazards <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-indigo-500">in Real Time</span>
+                                Report Road Hazards & Track <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-indigo-500">Resolution Progress</span>
                             </TextEffect>
 
                             <TextEffect
@@ -66,7 +66,7 @@ export default function HeroSection() {
                                 as="p"
                                 className="text-pretty text-base sm:text-lg text-muted-foreground/90 max-w-2xl mx-auto font-normal leading-relaxed"
                             >
-                                Empowering citizens and municipal authorities with high-precision GPS geo-location, AI duplicate matching, and PostGIS boundary routing.
+                                Empowering citizens and municipal authorities with instant GPS reporting, AI duplicate detection, automated PostGIS boundary routing, and live status tracking.
                             </TextEffect>
 
                             <AnimatedGroup
