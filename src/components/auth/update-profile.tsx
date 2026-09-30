@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, X, Loader2, CheckCircle2, ShieldCheck, User, Mail, ArrowLeft } from 'lucide-react';
+import { Camera, X, Loader2, CheckCircle2, ShieldCheck, User, Mail, ArrowLeft, Building2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUploadThing } from '@/src/lib/uploadthing';
 import { toast } from 'sonner';
@@ -39,6 +39,7 @@ export interface ProfileFormData {
     name: string;
     email?: string;
     role?: string;
+    municipalityName?: string;
     emailVerified?: boolean;
     avatar?: string;
 }
@@ -60,6 +61,7 @@ const SettingsProfile = ({
     const [name, setName] = useState(defaultValues.name ?? '');
     const userEmail = defaultValues.email ?? '';
     const userRole = defaultValues.role ?? 'USER';
+    const municipalityName = defaultValues.municipalityName;
     const isEmailVerified = defaultValues.emailVerified ?? false;
 
     const [avatarFiles, setAvatarFiles] = useState<File[]>([]);
@@ -191,10 +193,12 @@ const SettingsProfile = ({
         name === defaultValues.name && avatarFiles.length === 0;
 
     const formattedRole = userRole === 'ADMIN'
-        ? 'Super Admin / Manager'
+        ? 'Super Admin'
+        : userRole === 'MANAGER'
+        ? 'Municipality Manager'
         : userRole === 'OFFICER'
         ? 'Municipal Patrol Officer'
-        : 'Civic Reporter';
+        : 'Citizen Reporter';
 
     return (
         <>
@@ -374,18 +378,28 @@ const SettingsProfile = ({
                         )}
 
                         {/* Role & Context Card */}
-                        <div className="rounded-xl border bg-muted/40 p-3.5 space-y-1.5">
+                        <div className="rounded-xl border bg-muted/40 p-3.5 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                                     <ShieldCheck className="size-3.5 text-primary" />
                                     <span>Civic Platform Status</span>
                                 </span>
-                                <Badge variant="secondary" className="text-[10px] font-mono">
+                                <Badge variant={userRole === 'OFFICER' || userRole === 'MANAGER' || userRole === 'ADMIN' ? 'default' : 'secondary'} className="text-[10px] font-mono">
                                     {formattedRole}
                                 </Badge>
                             </div>
+                            {municipalityName && (
+                                <div className="flex items-center gap-1.5 text-xs text-foreground font-medium pt-0.5">
+                                    <Building2 className="size-3.5 text-blue-500 shrink-0" />
+                                    <span>Jurisdiction: <strong className="text-primary font-semibold">{municipalityName}</strong></span>
+                                </div>
+                            )}
                             <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                Your account is enabled for instant GPS road hazard reporting, upvoting community issues, and receiving live status resolution notifications.
+                                {userRole === 'OFFICER' || userRole === 'MANAGER'
+                                    ? 'Your account is authorized for official municipal triage: verifying road hazards, assigning field crews, and managing lifecycle status transitions.'
+                                    : userRole === 'ADMIN'
+                                    ? 'Your account has global platform management rights across all municipal bodies, users, and jurisdiction boundaries.'
+                                    : 'Your account is enabled for instant GPS road hazard reporting, upvoting community issues, and receiving live status resolution notifications.'}
                             </p>
                         </div>
                     </div>
