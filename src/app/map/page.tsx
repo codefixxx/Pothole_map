@@ -581,21 +581,50 @@ export default function MapPage() {
                             </Button>
                         </div>
 
-                        {/* Status Filter Pills (Always visible on desktop, Collapsible drawer on mobile) */}
-                        <div
-                            className={`pointer-events-auto flex items-center gap-1 overflow-x-auto rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md max-w-full scrollbar-none transition-all duration-200 ${
-                                showFiltersMobile ? 'flex max-w-full animate-in fade-in slide-in-from-top-2' : 'hidden sm:flex'
-                            }`}
-                        >
+                        {/* Mobile Stacked Filter Panel (Vertical Stack when Filter is clicked on mobile/small screens) */}
+                        {showFiltersMobile && (
+                            <div className="pointer-events-auto sm:hidden flex flex-col gap-1 w-full rounded-xl border bg-background/95 p-2 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 z-20">
+                                <div className="flex items-center justify-between px-2 py-1 border-b border-border/50 mb-1">
+                                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                        Filter by Status
+                                    </span>
+                                    <button
+                                        onClick={() => setShowFiltersMobile(false)}
+                                        className="rounded-full p-1 text-muted-foreground hover:text-foreground"
+                                    >
+                                        <X className="size-3" />
+                                    </button>
+                                </div>
+                                {STATUS_FILTERS.map((f) => (
+                                    <button
+                                        key={f.value}
+                                        onClick={() => {
+                                            setActiveStatus(f.value);
+                                            setShowFiltersMobile(false);
+                                        }}
+                                        className={`flex items-center justify-between w-full h-8 px-3 rounded-lg text-xs font-medium transition-colors ${
+                                            activeStatus === f.value
+                                                ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                                                : 'hover:bg-accent text-foreground/90'
+                                        }`}
+                                    >
+                                        <span>{f.label}</span>
+                                        {activeStatus === f.value && (
+                                            <span className="size-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Desktop Horizontal Status Filter Pills */}
+                        <div className="pointer-events-auto hidden sm:flex items-center gap-1 rounded-xl border bg-background/95 p-1 shadow-lg backdrop-blur-md max-w-full">
                             {STATUS_FILTERS.map((f) => (
                                 <Button
                                     key={f.value}
                                     size="xs"
                                     variant={activeStatus === f.value ? 'default' : 'ghost'}
-                                    onClick={() => {
-                                        setActiveStatus(f.value);
-                                        setShowFiltersMobile(false);
-                                    }}
+                                    onClick={() => setActiveStatus(f.value)}
                                     className="h-7 rounded-lg text-[11px] font-medium px-2.5 whitespace-nowrap shrink-0"
                                 >
                                     {f.label}
@@ -610,23 +639,26 @@ export default function MapPage() {
                         </div>
                     </div>
 
-                    {/* Bottom Status Legend */}
-                    <div className="absolute bottom-6 left-4 z-10 hidden rounded-xl border bg-background/90 p-3 shadow-lg backdrop-blur-md sm:left-6 lg:block">
-                        <div className="mb-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                    {/* Bottom Status Legend (Positioned above bottom-left mode switcher pill to prevent overlapping) */}
+                    <div className="absolute bottom-16 left-3 sm:bottom-20 sm:left-6 z-10 rounded-xl border bg-background/90 p-2.5 shadow-lg backdrop-blur-md">
+                        <div className="mb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                             <Layers className="size-3" />
                             <span>Lifecycle State</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                            {Object.entries(STATUS_COLORS)
-                                .slice(0, 6)
-                                .map(([status, config]) => (
-                                    <div key={status} className="flex items-center gap-2">
-                                        <span className="size-2.5 rounded-full" style={{ backgroundColor: config.hex }} />
-                                        <span className="capitalize text-xs text-foreground/90 font-medium">
-                                            {status.toLowerCase().replace('_', ' ')}
-                                        </span>
-                                    </div>
-                                ))}
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                            {[
+                                { label: 'Pending', hex: STATUS_COLORS.PENDING.hex },
+                                { label: 'Verified', hex: STATUS_COLORS.VERIFIED.hex },
+                                { label: 'In Progress', hex: STATUS_COLORS.IN_PROGRESS.hex },
+                                { label: 'Resolved', hex: STATUS_COLORS.RESOLVED.hex },
+                            ].map((item) => (
+                                <div key={item.label} className="flex items-center gap-1.5">
+                                    <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: item.hex }} />
+                                    <span className="text-[11px] text-foreground/90 font-medium whitespace-nowrap">
+                                        {item.label}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
