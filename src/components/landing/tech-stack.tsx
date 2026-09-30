@@ -34,7 +34,7 @@ const Logos = ({
       className: "h-8 w-auto dark:invert",
     },
     {
-      name: "PostgreSQL",
+      name: "PostgreSQL & PostGIS",
       logo: "/logo/Postgresql.svg",
       className: "h-8 w-auto",
     },
@@ -44,13 +44,13 @@ const Logos = ({
       className: "h-8 w-auto",
     },
     {
-      name: "Leaflet",
-      logo: "/logo/Leaflet.svg",
+      name: "MapLibre GL JS",
+      logo: "/logo/Maplibre.svg",
       className: "h-8 w-auto",
     },
     {
-      name: "WebSocket",
-      logo: "/logo/Websocket.svg",
+      name: "OpenStreetMap",
+      logo: "/logo/OpenStreetMap.svg",
       className: "h-8 w-auto",
     },
   ],

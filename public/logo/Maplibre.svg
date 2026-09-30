@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="160" height="48">
+  <rect width="200" height="60" rx="12" fill="#1e293b"/>
+  <path fill="#38bdf8" d="M30 15L15 23.5L30 32L45 23.5L30 15Z"/>
+  <path fill="#0284c7" d="M15 27.5L30 36L45 27.5L30 31.5L15 27.5Z"/>
+  <path fill="#0369a1" d="M15 35.5L30 44L45 35.5L30 39.5L15 35.5Z"/>
+  <text x="56" y="36" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="16">MapLibre GL</text>
+</svg>
