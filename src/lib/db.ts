@@ -11,7 +11,7 @@ const connectionString = process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes("sslmode=require")
+  ssl: connectionString?.includes("ssl")
     ? { rejectUnauthorized: false }
     : undefined,
 });
