@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server';
 import { getRedisConnection } from './redis';
 
 const memoryRateLimitStore = new Map<string, { count: number; resetAt: number }>();
@@ -9,6 +10,36 @@ export interface RateLimitResult {
     resetInSeconds: number;
 }
 
+export interface RateLimitRule {
+    limit: number;
+    windowSeconds: number;
+}
+
+export const RATE_LIMIT_CONFIGS: Record<string, RateLimitRule> = {
+    pothole_create: { limit: 10, windowSeconds: 60 },
+    upvote: { limit: 30, windowSeconds: 60 },
+    comment: { limit: 15, windowSeconds: 60 },
+    upload: { limit: 15, windowSeconds: 60 },
+    contact: { limit: 5, windowSeconds: 60 },
+    auth: { limit: 20, windowSeconds: 60 },
+    default_api: { limit: 60, windowSeconds: 60 },
+};
+
+/**
+ * Get client IP identifier from NextRequest headers
+ */
+export function getClientIp(req: NextRequest): string {
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    if (forwardedFor) {
+        const ip = forwardedFor.split(',')[0].trim();
+        if (ip) return ip;
+    }
+    const realIp = req.headers.get('x-real-ip');
+    if (realIp) return realIp.trim();
+
+    return '127.0.0.1';
+}
+
 /**
  * Sliding window rate-limiter supporting Redis with in-memory Map fallback.
  * @param identifier IP address, user ID, or client key
@@ -17,7 +48,7 @@ export interface RateLimitResult {
  */
 export async function rateLimit(
     identifier: string,
-    limit = 20,
+    limit = 60,
     windowSeconds = 60
 ): Promise<RateLimitResult> {
     const key = `ratelimit:${identifier}`;
