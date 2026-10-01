@@ -118,11 +118,8 @@ export function DuplicateComparisonModal({
         );
 
     const confidencePct = Math.round(candidate.confidenceScore * 100);
-    const hasImages = Boolean(primary.imageUrl || duplicate.imageUrl);
     const visualPct = candidate.visualSimilarity !== undefined && candidate.visualSimilarity !== null
         ? Math.round(candidate.visualSimilarity * 100)
-        : hasImages
-        ? Math.round(candidate.confidenceScore * 100)
         : null;
 
     const totalCombinedVotes = (primary.votesCount || 0) + (duplicate.votesCount || 0);
@@ -416,10 +413,14 @@ export function DuplicateComparisonModal({
                                 Visual Similarity
                             </div>
                             <div className="text-sm font-bold text-foreground mt-0.5 flex items-baseline gap-1">
-                                <span>{visualPct !== null ? `${visualPct}%` : 'Pending AI Vector'}</span>
-                                {visualPct !== null && (
+                                <span>{visualPct !== null ? `${visualPct}%` : 'N/A (Spatial Only)'}</span>
+                                {visualPct !== null ? (
                                     <span className="text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
                                         (Cosine match)
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] font-normal text-muted-foreground">
+                                        (No image pair)
                                     </span>
                                 )}
                             </div>
