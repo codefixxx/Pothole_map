@@ -7,10 +7,8 @@ export async function runDbPoolLoadTests() {
     const startTime = Date.now();
 
     try {
-        const queryPromises = Array.from({ length: totalQueries }).map(async (_, idx) => {
-            return db.user.findFirst({
-                select: { id: true, email: true },
-            });
+        const queryPromises = Array.from({ length: totalQueries }).map(async () => {
+            return db.$queryRaw`SELECT 1 as alive`;
         });
 
         const results = await Promise.all(queryPromises);

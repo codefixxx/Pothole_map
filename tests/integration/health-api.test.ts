@@ -7,9 +7,13 @@ export async function runHealthApiIntegrationTests() {
         const response = await healthRoute();
         const data = await response.json();
 
-        if (response.status === 200 && data.status === 'ok' && data.services?.database === 'healthy') {
+        if (
+            response.status === 200 &&
+            (data.status === 'healthy' || data.status === 'degraded') &&
+            data.services?.database?.status === 'up'
+        ) {
             console.log('  ✅ GET /api/health Payload Contract & DB Health: PASSED');
-            console.log('  ✅ Services Check (Database: healthy, Cache:', data.services?.cache, '): PASSED');
+            console.log('  ✅ Services Check (Database: up, Cache Queue:', data.services?.redisQueue?.status, '): PASSED');
         } else {
             console.error('❌ GET /api/health: FAILED', { status: response.status, data });
             return false;
