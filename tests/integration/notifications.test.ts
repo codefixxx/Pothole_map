@@ -1,27 +1,66 @@
-import { transporter } from '../../src/lib/nodemailer';
+import { db } from '../../src/lib/db';
+import { getOrCreateTestUser } from '../helpers/test-user';
+import {
+    createNotification,
+    sendVerificationNotification,
+    sendOngoingNotification,
+    sendFixedNotification,
+} from '../../src/services/notification.service';
 
 export async function runNotificationsIntegrationTests() {
-    console.log('--- [INTEGRATION TEST] Notification Dispatch & Transport Engine ---');
+    console.log('--- [INTEGRATION TEST] Notification Persistence & Transport Engine ---');
 
-    // 1. Transporter verification
-    if (transporter && typeof transporter.sendMail === 'function') {
-        console.log('  ✅ Nodemailer Transport Instance Initialization: PASSED');
+    const actor = await getOrCreateTestUser();
+
+    // 1. Direct Database Notification Creation
+    const testTitle = `Test Notification ${Date.now()}`;
+    const testMessage = 'Your pothole report status has been updated to VERIFIED.';
+    const testLink = 'http://localhost:3000/dashboard';
+
+    const notif = await createNotification({
+        userId: actor.id,
+        title: testTitle,
+        message: testMessage,
+        link: testLink,
+    });
+
+    if (notif && notif.id && notif.title === testTitle) {
+        console.log('  ✅ Real Database Notification Creation & Relation: PASSED');
     } else {
-        console.error('❌ Nodemailer Transport Initialization: FAILED');
+        console.error('❌ Notification Creation: FAILED');
         return false;
     }
 
-    // 2. Notification Link & Content Template Rendering
-    const sampleLink = 'https://potholemap.gov.in/report/pothole-123';
-    const sampleDescription = 'Your report status has been updated to REPAIRED.';
-    
-    if (sampleLink.startsWith('https://') && sampleDescription.includes('REPAIRED')) {
-        console.log('  ✅ Notification HTML Template Formatting & Meta Injection: PASSED');
+    // 2. Query Notification Record & Read Status
+    const fetched = await db.notification.findUnique({
+        where: { id: notif.id },
+    });
+
+    if (fetched && fetched.userId === actor.id && fetched.read === false) {
+        console.log('  ✅ Query Notification & Unread State Assertion: PASSED');
     } else {
-        console.error('❌ Notification Template Formatting: FAILED');
+        console.error('❌ Query Notification: FAILED', fetched);
         return false;
     }
 
-    console.log('✅ Notifications Integration Suite: ALL 2 TESTS PASSED');
+    // 3. Test Business Dispatch Helper (sendVerificationNotification)
+    const countBefore = await db.notification.count({ where: { userId: actor.id } });
+    await sendVerificationNotification(actor.id, 'pothole-test-123');
+    const countAfter = await db.notification.count({ where: { userId: actor.id } });
+
+    if (countAfter > countBefore) {
+        console.log('  ✅ Real Business Dispatch (sendVerificationNotification): PASSED');
+    } else {
+        console.error('❌ Business Notification Dispatch: FAILED');
+        return false;
+    }
+
+    // 4. Test Notification Lifecycle Cleanup
+    await db.notification.deleteMany({
+        where: { userId: actor.id },
+    });
+    console.log('  ✅ Test Notification Cleanup: PASSED');
+
+    console.log('✅ Notifications Integration Suite: ALL TESTS PASSED');
     return true;
 }
