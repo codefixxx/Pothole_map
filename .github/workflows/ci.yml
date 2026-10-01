@@ -73,6 +73,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install pgvector Extension in Postgres Container
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=postgis/postgis:16-3.4")
+          docker exec -u 0 $CONTAINER_ID apt-get update
+          docker exec -u 0 $CONTAINER_ID apt-get install -y postgresql-16-pgvector
+
       - name: Push Prisma Schema to Test DB
         env:
           DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/pothole_map_test?schema=public"
@@ -126,6 +132,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install pgvector Extension in Postgres Container
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "ancestor=postgis/postgis:16-3.4")
+          docker exec -u 0 $CONTAINER_ID apt-get update
+          docker exec -u 0 $CONTAINER_ID apt-get install -y postgresql-16-pgvector
 
       - name: Push Prisma Schema to Test DB
         env:
