@@ -1,0 +1,110 @@
+name: PotholeMap Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-typecheck:
+    name: 🧹 ESLint & TypeScript Compilation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      - name: Run TypeScript typecheck
+        run: npx tsc --noEmit
+
+  playwright-e2e:
+    name: 🎭 Playwright End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: pothole_map_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Push Prisma Schema to Test DB
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/pothole_map_test?schema=public"
+        run: npx prisma db push --skip-generate
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E Tests
+        env:
+          DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/pothole_map_test?schema=public"
+          REDIS_URL: "redis://localhost:6379"
+          BETTER_AUTH_SECRET: "ci_testing_auth_secret_32chars_long!!"
+          NODE_ENV: "test"
+        run: npx playwright test
+
+      - name: Upload Playwright Test Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  k6-load-regression:
+    name: ⚡ k6 API Load Regression Testing
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run k6 Load Regression Test
+        uses: grafana/k6-action@v0.5.0
+        with:
+          filename: tests/k6/load-spike-test.js
+          flags: --vus 5 --duration 10s
+        continue-on-error: true
