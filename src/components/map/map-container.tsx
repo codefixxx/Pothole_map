@@ -24,6 +24,7 @@ interface MapContainerProps {
     modeSwitcherPosition?: 'top-left' | 'bottom-left' | 'top-right' | 'bottom-right';
     interactive?: boolean;
     jurisdictionPolygon?: any;
+    enableClustering?: boolean;
 }
 
 function getStatusSvgIcon(status: string) {
@@ -103,6 +104,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         modeSwitcherPosition = 'bottom-left',
         interactive = true,
         jurisdictionPolygon,
+        enableClustering = true,
     },
     ref
 ) {
@@ -285,13 +287,125 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
         }
     }, [jurisdictionPolygon, mapLoaded]);
 
-    // Render Markers with declustering for overlapping coordinates
+    // Render Markers with MapLibre GeoJSON Layer Clustering & declustering
     useEffect(() => {
         if (!mapRef.current || !mapLoaded) return;
+        const map = mapRef.current;
 
-        // Clear existing markers
+        // Clear existing DOM markers
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
+
+        // GeoJSON Feature Collection for Vector Layer Clustering
+        const geojsonFeatures = markers.map((m) => ({
+            type: 'Feature' as const,
+            properties: {
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                status: m.status,
+                severity: m.severity,
+            },
+            geometry: {
+                type: 'Point' as const,
+                coordinates: [m.longitude, m.latitude],
+            },
+        }));
+
+        const geojsonData = {
+            type: 'FeatureCollection' as const,
+            features: geojsonFeatures,
+        };
+
+        if (enableClustering) {
+            try {
+                const clusterSource = map.getSource('pothole-hazard-clusters') as any;
+                if (clusterSource) {
+                    clusterSource.setData(geojsonData);
+                } else {
+                    map.addSource('pothole-hazard-clusters', {
+                        type: 'geojson',
+                        data: geojsonData,
+                        cluster: true,
+                        clusterMaxZoom: 14,
+                        clusterRadius: 50,
+                    });
+
+                    // Cluster Circle Layer
+                    map.addLayer({
+                        id: 'pothole-cluster-circles',
+                        type: 'circle',
+                        source: 'pothole-hazard-clusters',
+                        filter: ['has', 'point_count'],
+                        paint: {
+                            'circle-color': [
+                                'step',
+                                ['get', 'point_count'],
+                                '#f59e0b', // Amber (< 10 points)
+                                10,
+                                '#ea580c', // Orange (10-50 points)
+                                50,
+                                '#dc2626', // Red (50+ points)
+                            ],
+                            'circle-radius': [
+                                'step',
+                                ['get', 'point_count'],
+                                18,
+                                10,
+                                24,
+                                50,
+                                30,
+                            ],
+                            'circle-stroke-width': 3,
+                            'circle-stroke-color': '#ffffff',
+                        },
+                    });
+
+                    // Cluster Count Text Label Layer
+                    map.addLayer({
+                        id: 'pothole-cluster-counts',
+                        type: 'symbol',
+                        source: 'pothole-hazard-clusters',
+                        filter: ['has', 'point_count'],
+                        layout: {
+                            'text-field': '{point_count_abbreviated}',
+                            'text-size': 12,
+                        },
+                        paint: {
+                            'text-color': '#ffffff',
+                        },
+                    });
+
+                    // Click cluster to zoom in
+                    map.on('click', 'pothole-cluster-circles', (e) => {
+                        const features = map.queryRenderedFeatures(e.point, {
+                            layers: ['pothole-cluster-circles'],
+                        });
+                        const clusterId = features[0]?.properties?.cluster_id;
+                        const source = map.getSource('pothole-hazard-clusters') as any;
+                        if (source && clusterId !== undefined) {
+                            source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+                                if (err) return;
+                                const geom = features[0].geometry as any;
+                                map.easeTo({
+                                    center: geom.coordinates,
+                                    zoom: zoom,
+                                });
+                            });
+                        }
+                    });
+
+                    map.on('mouseenter', 'pothole-cluster-circles', () => {
+                        map.getCanvas().style.cursor = 'pointer';
+                    });
+                    map.on('mouseleave', 'pothole-cluster-circles', () => {
+                        map.getCanvas().style.cursor = '';
+                    });
+                }
+            } catch (err) {
+                console.warn('[MapContainer] GeoJSON cluster layer error:', err);
+            }
+        }
 
         const displayMarkers = declusterMarkers(markers);
 
@@ -343,7 +457,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
 
             markersRef.current.push(marker);
         });
-    }, [markers, mapLoaded, onMarkerClick, selectedMarkerId]);
+    }, [markers, mapLoaded, onMarkerClick, selectedMarkerId, enableClustering]);
 
     // Handle Draggable Marker (for report capture)
     useEffect(() => {
