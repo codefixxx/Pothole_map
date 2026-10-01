@@ -26,6 +26,9 @@ jobs:
       - name: Validate Prisma Schema
         run: npx prisma validate
 
+      - name: Generate Prisma Client Types
+        run: npx prisma generate
+
       - name: Run TypeScript typecheck
         run: npx tsc --noEmit
 
@@ -73,7 +76,7 @@ jobs:
       - name: Push Prisma Schema to Test DB
         env:
           DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/pothole_map_test?schema=public"
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push
 
       - name: Run Unit & Integration Test Suite
         env:
@@ -127,7 +130,7 @@ jobs:
       - name: Push Prisma Schema to Test DB
         env:
           DATABASE_URL: "postgresql://postgres:postgrespassword@localhost:5432/pothole_map_test?schema=public"
-        run: npx prisma db push --skip-generate
+        run: npx prisma db push
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
