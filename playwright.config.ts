@@ -27,6 +27,9 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         baseURL: 'http://localhost:3000',
+        launchOptions: {
+          args: ['--ignore-certificate-errors', '--use-gl=swiftshader'],
+        },
       },
     },
   ],
