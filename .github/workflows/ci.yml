@@ -73,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma Client Types
+        run: npx prisma generate
+
       - name: Install pgvector Extension in Postgres Container
         run: |
           CONTAINER_ID=$(docker ps -q --filter "ancestor=postgis/postgis:16-3.4")
@@ -140,6 +143,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma Client Types
+        run: npx prisma generate
+
       - name: Install pgvector Extension in Postgres Container
         run: |
           CONTAINER_ID=$(docker ps -q --filter "ancestor=postgis/postgis:16-3.4")
@@ -186,7 +192,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run k6 Load Regression Test
-        uses: grafana/k6-action@v0.5.0
+        uses: grafana/k6-action@v0.3.1
         with:
           filename: tests/k6/load-spike-test.js
           flags: --vus 5 --duration 10s
