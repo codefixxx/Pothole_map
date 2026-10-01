@@ -13,6 +13,9 @@ const connectionString = process.env.DATABASE_URL;
 
 const pool = new Pool({
   connectionString,
+  max: parseInt(process.env.DB_POOL_MAX || "20", 10),
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 15000,
   ssl: connectionString?.includes("ssl")
     ? { rejectUnauthorized: false }
     : undefined,
@@ -24,9 +27,10 @@ export const db =
   global.prisma ||
   new PrismaClient({
     adapter,
-    log: ["query", "error"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
 if (process.env.NODE_ENV !== "production") {
   global.prisma = db;
 }
+
