@@ -33,6 +33,7 @@ import {
     Info,
 } from 'lucide-react';
 import Link from 'next/link';
+import imageCompression from 'browser-image-compression';
 import { cn } from '@/src/lib/utils';
 
 interface DuplicateCandidate {
@@ -160,20 +161,44 @@ export function ReportModal({
         }
     }, [open, initialCoords]);
 
-    // Process file selected via pick, drop, or paste
+    // Process file selected via pick, drop, or paste (with client-side downsampling)
     const processFile = async (file: File) => {
         if (!file.type.startsWith('image/')) {
             toast.error('Please select or drop an image file (JPEG, PNG, WEBP).');
             return;
         }
 
-        if (file.size > 10 * 1024 * 1024) {
-            toast.error('Image size exceeds 10MB limit.');
+        if (file.size > 15 * 1024 * 1024) {
+            toast.error('Image size exceeds 15MB limit.');
             return;
         }
 
-        setSelectedFile(file);
-        const objectUrl = URL.createObjectURL(file);
+        let fileToUpload = file;
+        const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+        // Compress images > 500KB to ~800KB & strip EXIF headers
+        if (file.size > 500 * 1024) {
+            try {
+                const options = {
+                    maxSizeMB: 0.8,
+                    maxWidthOrHeight: 1920,
+                    useWebWorker: true,
+                };
+                const compressedBlob = await imageCompression(file, options);
+                fileToUpload = new File([compressedBlob], file.name, {
+                    type: compressedBlob.type,
+                    lastModified: Date.now(),
+                });
+                const compressedSizeKB = Math.round(fileToUpload.size / 1024);
+                toast.success(`Photo optimized for upload (${originalSizeMB}MB → ${compressedSizeKB}KB)`);
+            } catch (err) {
+                console.warn('Image compression fallback to original:', err);
+                fileToUpload = file;
+            }
+        }
+
+        setSelectedFile(fileToUpload);
+        const objectUrl = URL.createObjectURL(fileToUpload);
         setPreviewUrl(objectUrl);
 
         // If authenticated, start direct upload immediately in background
@@ -181,7 +206,7 @@ export function ReportModal({
             setIsUploading(true);
             setUploadProgress(10);
             try {
-                await startUpload([file]);
+                await startUpload([fileToUpload]);
             } catch (err: any) {
                 console.error('Direct upload failed:', err);
                 setIsUploading(false);
