@@ -1,13 +1,10 @@
 import { db } from '../../src/lib/db';
+import { getOrCreateTestUser } from '../helpers/test-user';
 
 export async function runDuplicateDetectionIntegrationTests() {
     console.log('--- [INTEGRATION TEST] AI & Spatial Duplicate Candidate Detection ---');
 
-    const actor = await db.user.findFirst();
-    if (!actor) {
-        console.error('❌ Integration Test Error: No user found in database');
-        return false;
-    }
+    const actor = await getOrCreateTestUser();
 
     const primaryId = `primary-pothole-${Date.now()}`;
     const duplicateId = `duplicate-pothole-${Date.now()}`;

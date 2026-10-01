@@ -1,13 +1,10 @@
 import { db } from '../../src/lib/db';
+import { getOrCreateTestUser } from '../helpers/test-user';
 
 export async function runPotholeServiceIntegrationTests() {
     console.log('--- [INTEGRATION TEST] Pothole Lifecycle DB Service & PostGIS Queries ---');
 
-    const actor = await db.user.findFirst();
-    if (!actor) {
-        console.error('❌ Integration Test Error: No user found in database');
-        return false;
-    }
+    const actor = await getOrCreateTestUser();
 
     const testPotholeId = `test-pothole-int-${Date.now()}`;
 

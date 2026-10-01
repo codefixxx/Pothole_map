@@ -1,14 +1,11 @@
 import { logAuditAction, getAuditLogs } from '../../src/services/audit.service';
 import { db } from '../../src/lib/db';
+import { getOrCreateTestUser } from '../helpers/test-user';
 
 export async function runAuditServiceIntegrationTests() {
     console.log('--- [INTEGRATION TEST] Audit Logging Service & Neon PostgreSQL ---');
 
-    const actor = await db.user.findFirst();
-    if (!actor) {
-        console.error('❌ Integration Test Error: No user found in database');
-        return false;
-    }
+    const actor = await getOrCreateTestUser();
 
     const testActionName = `INTEGRATION_TEST_ACTION_${Date.now()}`;
     const testEntityId = `pothole-int-id-${Date.now()}`;
