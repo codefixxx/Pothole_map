@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import imageCompression from 'browser-image-compression';
+import { saveOfflineReport } from '@/src/lib/offline-queue';
 import { cn } from '@/src/lib/utils';
 
 interface DuplicateCandidate {
@@ -366,6 +367,25 @@ export function ReportModal({
         try {
             // Map severity to integer score (LOW: 3, MEDIUM: 6, HIGH: 9)
             const severityScore = severity === 'HIGH' ? 9 : severity === 'MEDIUM' ? 6 : 3;
+
+            // Handle offline report submission
+            if (typeof window !== 'undefined' && !navigator.onLine) {
+                await saveOfflineReport({
+                    title: title.trim(),
+                    description: description.trim(),
+                    severity: severityScore,
+                    latitude: coords[1],
+                    longitude: coords[0],
+                    locationSource,
+                    locationAccuracy,
+                    captureTimestamp: new Date().toISOString(),
+                    imageUrl: uploadedImageUrl || previewUrl || undefined,
+                });
+                toast.warning('Offline mode: Pothole report saved locally in IndexedDB. Will auto-sync when network returns!');
+                onOpenChange(false);
+                setIsSubmitting(false);
+                return;
+            }
 
             const payload: any = {
                 title: title.trim(),

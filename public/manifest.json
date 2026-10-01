@@ -1,0 +1,21 @@
+{
+  "name": "PotholeMap — Instant Civic Hazard Reporting",
+  "short_name": "PotholeMap",
+  "description": "Report road hazards in seconds with instant GPS acquisition, AI duplicate detection, and municipal triage.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

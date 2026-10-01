@@ -3,6 +3,7 @@ import { ThemeProvider } from '@/src/components/layout';
 import './globals.css';
 import { Toaster } from '@/src/components/ui/sonner';
 import { TooltipProvider } from '@/src/components/ui/tooltip';
+import { OfflineSyncProvider } from '@/src/components/common/offline-sync-provider';
 
 export const metadata: Metadata = {
     title: {
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     },
     description:
         'Report road hazards in seconds with instant GPS acquisition, parallel image upload, automated PostGIS municipal jurisdiction boundary routing, and live lifecycle status updates.',
+    manifest: '/manifest.json',
     keywords: [
         'pothole map',
         'civic reporting',
@@ -84,9 +86,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <TooltipProvider delayDuration={200}>
-                        {children}
-                    </TooltipProvider>
+                    <OfflineSyncProvider>
+                        <TooltipProvider delayDuration={200}>
+                            {children}
+                        </TooltipProvider>
+                    </OfflineSyncProvider>
                     <Toaster position="bottom-right" richColors />
                 </ThemeProvider>
             </body>
