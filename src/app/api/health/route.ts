@@ -1,5 +1,6 @@
 import { db } from '@/src/lib/db';
 import { getRedisConnection } from '@/src/lib/redis';
+import { getPotholeQueue } from '@/src/lib/queue';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -7,38 +8,86 @@ export const dynamic = 'force-dynamic';
 const startTime = Date.now();
 
 export async function GET() {
-    let dbStatus = 'healthy';
-    let redisStatus = 'healthy';
+    let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
 
-    // Check Database connectivity
+    // 1. Database & PostGIS Health Check
+    let dbStatus: 'up' | 'down' = 'down';
+    let dbLatencyMs = 0;
+    let postgisVersion: string | null = null;
+
+    const dbStart = Date.now();
     try {
-        await db.$queryRaw`SELECT 1`;
+        const result = await db.$queryRaw<Array<{ postgis: string }>>`
+            SELECT PostGIS_Full_Version() AS postgis;
+        `;
+        dbLatencyMs = Date.now() - dbStart;
+        dbStatus = 'up';
+        postgisVersion = result[0]?.postgis || 'Installed';
     } catch (err) {
-        console.error('Health check DB error:', err);
-        dbStatus = 'degraded';
+        console.error('[HealthCheck] DB PostGIS Ping Error:', err);
+        dbStatus = 'down';
+        overallStatus = 'unhealthy';
     }
 
-    // Check Redis connectivity
+    // 2. Redis & BullMQ Queue Health Check
+    let redisStatus: 'up' | 'degraded' | 'down' = 'down';
+    let redisLatencyMs = 0;
+    let queueJobCount = 0;
+
+    const redisStart = Date.now();
     try {
         const redis = getRedisConnection();
-        redisStatus = redis.status === 'ready' ? 'ready' : 'fallback_memory';
-    } catch {
-        redisStatus = 'fallback_memory';
+        const pingRes = await redis.ping();
+        redisLatencyMs = Date.now() - redisStart;
+        if (pingRes === 'PONG') {
+            redisStatus = 'up';
+            const queue = getPotholeQueue();
+            const counts = await queue.getJobCounts();
+            queueJobCount = (counts.waiting || 0) + (counts.active || 0);
+        } else {
+            redisStatus = 'degraded';
+        }
+    } catch (err) {
+        console.warn('[HealthCheck] Redis Queue Error:', err);
+        redisStatus = 'degraded';
+        if (overallStatus !== 'unhealthy') {
+            overallStatus = 'degraded';
+        }
     }
 
-    const isHealthy = dbStatus === 'healthy';
+    // 3. Storage Provider Check
+    let storageStatus: 'configured' | 'unconfigured' = 'unconfigured';
+    if (process.env.UPLOADTHING_SECRET || process.env.UPLOADTHING_APP_ID) {
+        storageStatus = 'configured';
+    }
+
+    const uptimeSeconds = Math.floor((Date.now() - startTime) / 1000);
+    const httpStatus = overallStatus === 'unhealthy' ? 503 : 200;
 
     return NextResponse.json(
         {
-            status: isHealthy ? 'ok' : 'degraded',
+            status: overallStatus,
             timestamp: new Date().toISOString(),
-            uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
+            uptimeSeconds,
+            environment: process.env.NODE_ENV || 'development',
             services: {
-                database: dbStatus,
-                cache: redisStatus,
+                database: {
+                    status: dbStatus,
+                    latencyMs: dbLatencyMs,
+                    postgisVersion,
+                },
+                redisQueue: {
+                    status: redisStatus,
+                    latencyMs: redisLatencyMs,
+                    pendingJobs: queueJobCount,
+                },
+                storage: {
+                    status: storageStatus,
+                    provider: 'uploadthing',
+                },
             },
             version: '2.0.0',
         },
-        { status: isHealthy ? 200 : 503 }
+        { status: httpStatus }
     );
 }
