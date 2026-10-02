@@ -9,7 +9,7 @@ export const OSM_LIGHT_STYLE: any = {
                 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 18,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         },
     },
@@ -19,7 +19,7 @@ export const OSM_LIGHT_STYLE: any = {
             type: 'raster',
             source: 'osm-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 22,
         },
     ],
 };
@@ -35,7 +35,7 @@ export const OSM_DARK_STYLE: any = {
                 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 18,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         },
     },
@@ -45,7 +45,7 @@ export const OSM_DARK_STYLE: any = {
             type: 'raster',
             source: 'osm-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 22,
         },
     ],
 };
@@ -59,7 +59,7 @@ export const SATELLITE_MAP_STYLE: any = {
                 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             ],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 18,
             attribution: '&copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
         },
     },
@@ -69,7 +69,7 @@ export const SATELLITE_MAP_STYLE: any = {
             type: 'raster',
             source: 'satellite-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 22,
         },
     ],
 };
@@ -91,7 +91,7 @@ export const OSM_RASTER_STYLE: any = {
                 'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
             ],
             tileSize: 256,
-            maxzoom: 19,
+            maxzoom: 18,
             attribution: '&copy; OpenStreetMap Contributors',
         },
     },
@@ -101,15 +101,15 @@ export const OSM_RASTER_STYLE: any = {
             type: 'raster',
             source: 'osm-tiles',
             minzoom: 0,
-            maxzoom: 19,
+            maxzoom: 22,
         },
     ],
 };
 
 export const DEFAULT_MAP_CENTER: [number, number] = [77.209, 28.6139]; // Default: New Delhi [lng, lat]
 export const DEFAULT_MAP_ZOOM = 12;
-export const DEFAULT_MAP_MAX_ZOOM = 19; // Maximum zoom level (level 19) for maximum street-level detail without blank tiles
-export const DEFAULT_MAP_MIN_ZOOM = 3;  // Global minimum zoom boundary
+export const DEFAULT_MAP_MAX_ZOOM = 18.5; // Sweet spot maximum zoom: overzooms max level 18 tiles smoothly without blank screens
+export const DEFAULT_MAP_MIN_ZOOM = 3;    // Global minimum zoom boundary
 
 export interface MapMarkerItem {
     id: string;
