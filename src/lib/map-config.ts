@@ -108,7 +108,7 @@ export const OSM_RASTER_STYLE: any = {
 
 export const DEFAULT_MAP_CENTER: [number, number] = [77.209, 28.6139]; // Default: New Delhi [lng, lat]
 export const DEFAULT_MAP_ZOOM = 12;
-export const DEFAULT_MAP_MAX_ZOOM = 18; // Cap zoom to level 18 to prevent missing tile blank screens
+export const DEFAULT_MAP_MAX_ZOOM = 19; // Maximum zoom level (level 19) for maximum street-level detail without blank tiles
 export const DEFAULT_MAP_MIN_ZOOM = 3;  // Global minimum zoom boundary
 
 export interface MapMarkerItem {
