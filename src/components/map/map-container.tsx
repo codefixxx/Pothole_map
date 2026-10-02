@@ -4,7 +4,7 @@ import React, { useEffect, useImperativeHandle, useRef, useState, forwardRef } f
 import { Map as MapLibreMap, Marker, NavigationControl, GeolocateControl, Popup } from 'maplibre-gl';
 import { useTheme } from 'next-themes';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { MAP_STYLES, OSM_RASTER_STYLE, DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MapMarkerItem, STATUS_COLORS } from '@/src/lib/map-config';
+import { MAP_STYLES, OSM_RASTER_STYLE, DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, DEFAULT_MAP_MAX_ZOOM, DEFAULT_MAP_MIN_ZOOM, MapMarkerItem, STATUS_COLORS } from '@/src/lib/map-config';
 import { cn } from '@/src/lib/utils';
 
 export interface MapContainerRef {
@@ -130,7 +130,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
             if (!mapRef.current) return;
             mapRef.current.flyTo({
                 center: coords,
-                zoom: zoomLevel,
+                zoom: Math.min(zoomLevel, DEFAULT_MAP_MAX_ZOOM),
                 essential: true,
                 speed: 1.2,
                 curve: 1.4,
@@ -150,7 +150,9 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                 container: mapContainerRef.current,
                 style: activeStyle,
                 center: center,
-                zoom: zoom,
+                zoom: Math.min(zoom, DEFAULT_MAP_MAX_ZOOM),
+                minZoom: DEFAULT_MAP_MIN_ZOOM,
+                maxZoom: DEFAULT_MAP_MAX_ZOOM,
                 interactive: interactive,
                 attributionControl: false,
             });
@@ -195,7 +197,9 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                     container: mapContainerRef.current,
                     style: OSM_RASTER_STYLE as any,
                     center: center,
-                    zoom: zoom,
+                    zoom: Math.min(zoom, DEFAULT_MAP_MAX_ZOOM),
+                    minZoom: DEFAULT_MAP_MIN_ZOOM,
+                    maxZoom: DEFAULT_MAP_MAX_ZOOM,
                     interactive: interactive,
                     attributionControl: false,
                 });
