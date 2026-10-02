@@ -4,6 +4,7 @@ import { runRealtimeSseIntegrationTests } from './integration/realtime-sse.test'
 import { runPotholeServiceIntegrationTests } from './integration/pothole-service.test';
 import { runNotificationsIntegrationTests } from './integration/notifications.test';
 import { runDuplicateDetectionIntegrationTests } from './integration/duplicate-detection.test';
+import { runAuthFlowsIntegrationTests } from './integration/auth-flows.test';
 
 async function testAllType2IntegrationTests() {
     console.log('================================================================');
@@ -17,6 +18,7 @@ async function testAllType2IntegrationTests() {
         runPotholeServiceIntegrationTests(),
         runNotificationsIntegrationTests(),
         runDuplicateDetectionIntegrationTests(),
+        runAuthFlowsIntegrationTests(),
     ]);
 
     const allPassed = results.every(Boolean);

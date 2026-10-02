@@ -53,6 +53,9 @@ export const POST = asyncHandler(async (req: Request, { params }: { params: Prom
     if (!session) {
         throw new AppError('Unauthorized', 401);
     }
+    if ((session.user as any).banned) {
+        throw new AppError('Your account has been suspended.', 403);
+    }
 
     if (potholeId.startsWith('sample-')) {
         return Response.json({

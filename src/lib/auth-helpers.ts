@@ -70,6 +70,14 @@ export async function authorizeReportAction(
     }
 
     // 4. Municipal actions (verify, status_update, assign)
+    const user = await db.user.findUnique({
+        where: { id: userId },
+        select: { emailVerified: true },
+    });
+    if (!user?.emailVerified) {
+        throw new ForbiddenError('You must verify your email address before performing municipal administrative actions.');
+    }
+
     const member = await db.municipalityMember.findUnique({
         where: { userId },
     });

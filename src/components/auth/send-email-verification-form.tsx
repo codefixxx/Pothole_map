@@ -20,7 +20,7 @@ const EmailVerificationForm = () => {
     }
     await sendVerificationEmail({
       email,
-      callbackURL: "/auth/verify"},
+      callbackURL: "/auth/verify/success"},
       {
         onRequest: (ctx) => {
         setIsPending(true)

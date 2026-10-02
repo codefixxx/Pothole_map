@@ -72,7 +72,24 @@ const SettingsProfile = ({
     );
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isSendingVerification, setIsSendingVerification] = useState(false);
     const [imgLoaded, setImgLoaded] = useState(false);
+
+    const handleResendVerification = async () => {
+        setIsSendingVerification(true);
+        try {
+            const res = await fetch('/api/auth/resend-verification', { method: 'POST' });
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to send verification email');
+            }
+            toast.success('Verification link sent! Please check your inbox.');
+        } catch (err: any) {
+            toast.error(err.message || 'Could not send verification email');
+        } finally {
+            setIsSendingVerification(false);
+        }
+    };
 
     const { startUpload } = useUploadThing('imageUploader');
 
@@ -360,9 +377,28 @@ const SettingsProfile = ({
                                             Verified
                                         </span>
                                     ) : (
-                                        <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                                            Unverified
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                                                Unverified
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={handleResendVerification}
+                                                disabled={isSendingVerification}
+                                                className="h-6 text-[10px] px-2 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                                            >
+                                                {isSendingVerification ? (
+                                                    <>
+                                                        <Loader2 className="size-3 animate-spin mr-1" />
+                                                        Sending...
+                                                    </>
+                                                ) : (
+                                                    'Resend Link'
+                                                )}
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                                 <Input
@@ -372,6 +408,11 @@ const SettingsProfile = ({
                                     disabled
                                     className="h-9 text-xs bg-muted/50 cursor-not-allowed text-muted-foreground"
                                 />
+                                {!isEmailVerified && (
+                                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium pt-0.5">
+                                        ⚠️ Please verify your email address to unlock pothole hazard reporting.
+                                    </p>
+                                )}
                             </div>
                         )}
 

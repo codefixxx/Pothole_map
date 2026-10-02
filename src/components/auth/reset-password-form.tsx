@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from '@/src/components/ui/button';
 import { Input } from '@/src/components/ui/input';
 import { Label } from '@/src/components/ui/label';
 import { FieldDescription } from '@/src/components/ui/field';
 import { resetPassword } from '@/src/lib/auth-client';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { resetPasswordSchema } from '@/src/lib/validations/auth.shema';
 import { z } from 'zod';
 
@@ -16,11 +16,12 @@ type ResetPasswordFormProps = {
     token: string;
 };
 const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
-    const router = useRouter();
     const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
         useState<boolean>(false);
     const [isPending, setIsPending] = useState<boolean>(false);
+    const [isSuccess, setIsSuccess] = useState<boolean>(false);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget as HTMLFormElement);
@@ -45,8 +46,8 @@ const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
                 onRequest: () => setIsPending(true),
                 onSuccess: () => {
                     setIsPending(false);
+                    setIsSuccess(true);
                     toast.success('Password reset successfully.');
-                    router.push('/auth/login');
                 },
                 onResponse: () => {
                     setIsPending(false);
@@ -60,6 +61,30 @@ const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
             },
         );
     };
+
+    if (isSuccess) {
+        return (
+            <div className="space-y-6 text-center py-4">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-8 ring-emerald-500/5">
+                    <CheckCircle2 className="size-8" />
+                </div>
+                
+                <div className="space-y-2">
+                    <h3 className="text-xl font-bold text-foreground">Password Reset Successful!</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Your account security credentials have been updated. You can now log in using your new password.
+                    </p>
+                </div>
+
+                <Button asChild className="w-full font-semibold gap-2">
+                    <Link href="/auth/login">
+                        <span>Proceed to Login</span>
+                        <ArrowRight className="size-4 ml-auto" />
+                    </Link>
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <form className="space-y-4" onSubmit={handleSubmit}>

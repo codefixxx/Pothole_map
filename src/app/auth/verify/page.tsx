@@ -15,7 +15,7 @@ const Page = async ({ searchParams }: PageProps) => {
     const error = params.error as string | undefined;
 
     if (!error) {
-        redirect('/dashboard');
+        redirect('/auth/verify/success');
     }
 
     const errorMessage =

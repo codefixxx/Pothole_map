@@ -25,6 +25,12 @@ export const POST = asyncHandler(async (req: Request) => {
     if (!session) {
         throw new AppError('Unauthorized', 401);
     }
+    if ((session.user as any).banned) {
+        throw new AppError('Your account has been suspended from filing pothole reports.', 403);
+    }
+    if (!session.user.emailVerified) {
+        throw new AppError('Please verify your email address to submit pothole reports.', 403);
+    }
 
     const body = await req.json();
     const validationResult = createPotholeSchema.safeParse({

@@ -71,7 +71,9 @@ export async function proxy(req: NextRequest) {
     const isOnProtectedRoute = protectedRoutes.some((route) =>
         pathname.startsWith(route)
     );
-    const isOnAuthRoute = pathname.startsWith('/auth');
+    const isOnAuthRoute =
+        pathname.startsWith('/auth') &&
+        !pathname.startsWith('/auth/verify/success');
 
     if (isOnProtectedRoute && !isLoggedIn) {
         return NextResponse.redirect(

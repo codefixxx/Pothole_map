@@ -7,6 +7,7 @@ import { getValidDomains, normalizeName } from './utils';
 import { sendEmail } from './nodemailer';
 
 export const auth = betterAuth({
+    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000',
     database: prismaAdapter(db, {
         provider: 'postgresql',
     }),
@@ -14,16 +15,23 @@ export const auth = betterAuth({
         enabled: true,
         minPasswordLength: 6,
         autoSignIn: false,
-        requireEmailVerification: false,
+        requireEmailVerification: true,
         resetPasswordTokenExpiresIn: 60 * 60,
         sendResetPassword: async ({ user, url }) => {
-            void sendEmail({
+            const baseUrl = process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000';
+            let targetPath = url;
+            if (targetPath.startsWith('/reset-password')) {
+                targetPath = `/auth${targetPath}`;
+            }
+            const link = new URL(targetPath, baseUrl);
+            console.log('[Auth] Generated Reset Password link:', link.toString());
+            await sendEmail({
                 to: user.email,
-                subject: 'Reset your password',
+                subject: 'Reset your password - PotholeMap',
                 meta: {
                     description:
                         'Click the button below to reset your password.',
-                    link: url,
+                    link: link.toString(),
                 },
             });
         },
@@ -33,14 +41,20 @@ export const auth = betterAuth({
         expiresIn: 60 * 60 * 24, // 24 hours
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
-            const link = new URL(url);
-            link.searchParams.set('callbackURL', '/auth/verify');
-            void sendEmail({
+            const baseUrl = process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000';
+            let targetPath = url;
+            if (targetPath.startsWith('/verify-email')) {
+                targetPath = `/api/auth${targetPath}`;
+            }
+            const link = new URL(targetPath, baseUrl);
+            link.searchParams.set('callbackURL', `${baseUrl}/auth/verify/success`);
+
+            await sendEmail({
                 to: user.email,
-                subject: 'Verify your email',
+                subject: 'Verify your email address - PotholeMap',
                 meta: {
                     description:
-                        'Please verify your email address to activate your account.',
+                        'Please click the button below to verify your email address and activate full pothole reporting access.',
                     link: link.toString(),
                 },
             });
