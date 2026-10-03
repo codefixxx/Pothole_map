@@ -48,7 +48,7 @@ Traditional civic complaint tools suffer from multiple critical operational bott
 
 ### 🔄 Centralized State Machine Lifecycle
 * **Enforced Workflow Policy**:
-  $$\text{PENDING} \longrightarrow \text{UNDER\_REVIEW} \longrightarrow \text{VERIFIED} \longrightarrow \text{ASSIGNED} \longrightarrow \text{IN\_PROGRESS} \longrightarrow \text{REPAIR\_COMPLETED} \longrightarrow \text{RESOLVED}$$
+  `PENDING` ➔ `UNDER_REVIEW` ➔ `VERIFIED` ➔ `ASSIGNED` ➔ `IN_PROGRESS` ➔ `REPAIR_COMPLETED` ➔ `RESOLVED`
 * **Immutable Log Trail**: Records every transition, actor, timestamp, and required notes/reasons into `ReportStatusHistory`.
 * **SLA Escalation**: Automatic background triggers flag reports remaining unaddressed past threshold SLA limits.
 
@@ -98,24 +98,19 @@ flowchart TD
 ## Screenshots
 
 ### 1. Citizen Interface & Interactive Vector Map
-| Dark Landing Page | Live Exploration Vector Map |
-| :---: | :---: |
-| Hero section featuring rapid hazard reporting CTA, live tracking metrics, and feature highlights. | Fullscreen vector map displaying status-coded hazard markers, filter bar, and search capabilities. |
+![Citizen Landing & Live Map](public/screenshots/01-landing-and-map.png)
 
 ### 2. Officer Triage Queue & AI Duplicate Resolution
-| Municipal Officer Triage Queue | AI Duplicate Candidate Comparison |
-| :---: | :---: |
-| Jurisdictional map view filtered by boundary, alongside priority-sorted defect cases and status action triggers. | Side-by-side visual & location analysis showing AI match confidence percentages, distance, and 1-click merge tools. |
+![Officer Triage & AI Duplicate Detection](public/screenshots/02-officer-triage-and-duplicates.png)
 
 ### 3. Executive Overview & SLA Escalation Dashboard
-| Platform Statistics & Lifecycle Breakdown | Automated SLA Escalation Alert |
-| :---: | :---: |
-| High-level platform KPIs (Total Reports, Resolution Rate, Coverage) and state machine distribution bars. | Real-time monitoring highlighting reports exceeding SLA response windows requiring manager intervention. |
+![Admin Overview & SLA Escalation Alerts](public/screenshots/03-admin-overview-and-escalations.png)
 
-### 4. Jurisdiction Management & Audit Trail
-| Municipalities Roster & PostGIS Boundary Visualizer | Immutable Platform Audit Logs |
-| :---: | :---: |
-| Municipal corporation cards and live PostGIS polygon jurisdiction boundary inspector (`ST_Contains`). | Compliance log tracking all privileged officer assignments, status changes, and administrative actions. |
+### 4. Jurisdiction Polygon Management & Municipalities Roster
+![Jurisdiction Polygon Boundaries & Municipalities Roster](public/screenshots/04-jurisdictions-and-municipalities.png)
+
+### 5. Immutable Platform Audit Logs
+![Immutable Platform Audit Logs](public/screenshots/05-immutable-audit-logs.png)
 
 ---
 
@@ -123,70 +118,86 @@ flowchart TD
 
 ### Prerequisites
 * **Node.js**: `v20.x` or higher
-* **PostgreSQL**: `v15+` with **PostGIS** and **pgvector** extensions installed
-* **Redis**: `v6+` (or Upstash Redis for serverless rate limiting & BullMQ queues)
+* **PostgreSQL**: `v15+` with **PostGIS** and **pgvector** extensions enabled (or Neon / Supabase PostgreSQL)
+* **Redis**: `v6+` (for BullMQ queues and rate limiting)
+* **Docker** (optional, recommended for running Redis locally)
 
 ### 1. Clone & Install Dependencies
 ```bash
-git clone https://github.com/your-username/pothole-map.git
+git clone https://github.com/codefixxx/Pothole_map.git
 cd pothole-map
 npm install
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the root directory:
+### 2. Start Redis Container
+If running Redis locally using Docker:
+```bash
+docker run -d --name pothole_redis -p 6379:6379 redis:7-alpine
+```
+*(Or use Docker Compose to spin up services: `docker compose -f docker-compose.prod.yml up -d redis`)*
+
+### 3. Environment Variables Configuration
+Create or update your `.env` file in the root directory:
 ```env
-# Database Connections (PostgreSQL + PostGIS + pgvector)
-DATABASE_URL="postgresql://postgres:password@localhost:5432/pothole_db?schema=public"
+# Database Connections (PostgreSQL with PostGIS + pgvector)
+DATABASE_URL="postgresql://user:password@host:5432/pothole_db?sslmode=verify-full"
+DIRECT_URL="postgresql://user:password@host:5432/pothole_db?sslmode=verify-full"
 
 # Better Auth Configuration
-BETTER_AUTH_SECRET="your-super-secret-key-at-least-32-chars-long"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+BETTER_AUTH_SECRET="your-32-char-random-auth-secret-key"
+BETTER_AUTH_BASE_URL="http://localhost:3000"
+NODE_ENV="development"
+APP_DEBUG="true"
 
-# Redis & BullMQ
-REDIS_URL="redis://localhost:6379"
-UPSTASH_REDIS_REST_URL="https://your-upstash-instance.upstash.io"
-UPSTASH_REDIS_REST_TOKEN="your-upstash-token"
+# OAuth & Authentication Providers
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-# Image Upload (Uploadthing)
-UPLOADTHING_SECRET="sk_live_..."
-UPLOADTHING_APP_ID="your-app-id"
+# Email Transport (Nodemailer)
+NODEMAILER_USER="your-email@gmail.com"
+NODEMAILER_APP_PASSWORD="your-gmail-app-password"
 
-# System Admin Initialization
-SUPER_ADMIN_EMAIL="admin@potholemap.com"
+# File & Image Upload (Uploadthing)
+UPLOADTHING_TOKEN="eyJhcGlLZXkiOiJza19saXZlX..."
+
+# Redis Cache & BullMQ Queue
+REDIS_URL="redis://127.0.0.1:6379"
 ```
 
-### 3. Run Database Migrations & Seeds
+### 4. Database Migrations & Seeding
 ```bash
-# Push database schema & create spatial/vector indexes
+# Apply Prisma database migrations
 npx prisma migrate dev
 
-# Seed demonstration municipalities, sample reports, and test accounts
+# Seed demonstration data (municipalities, jurisdictions, test reports)
 npx tsx prisma/seed.ts
 ```
 
-### 4. Start Development Server & Background Worker
-In your primary terminal, start the Next.js development web server:
-```bash
-npm run dev
-```
+### 5. Running the Application & Background Worker
 
-In a second terminal, launch the BullMQ background processing worker:
-```bash
-npm run worker
-```
+To run the complete platform locally, execute the web app and background worker processes:
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+1. **Start the Next.js Web Application**:
+   ```bash
+   npm run dev
+   ```
+   *Access the web app at [http://localhost:3000](http://localhost:3000).*
 
-### 5. Running Tests
+2. **Start the BullMQ Background Worker** *(in a second terminal)*:
+   ```bash
+   npm run worker
+   ```
+   *Processes background image embeddings, CLIP duplicate detection, and notification routing.*
+
+### 6. Running Tests & Quality Assurance
 ```bash
-# Run unit & integration tests
+# Run core unit and integration tests
 npm test
 
-# Run Playwright End-to-End tests
+# Run Playwright End-to-End UI tests
 npm run test:e2e
 
-# Run k6 load performance tests
+# Run k6 load and spike performance tests
 npm run test:k6
 ```
 
