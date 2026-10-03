@@ -9,8 +9,11 @@ import {
 } from '@/src/components/landing';
 import { InteractiveShowcase } from '@/src/components/landing/interactive-showcase';
 import { Footer } from '@/src/components/layout';
+import { getHomepageStats } from '@/src/services/stats.service';
 
-export default function Home() {
+export default async function Home() {
+    const stats = await getHomepageStats();
+
     return (
         <>
             <HeroSection />
@@ -18,7 +21,7 @@ export default function Home() {
             <InteractiveShowcase />
             <HowItWorks />
             <Features />
-            <StatsSection />
+            <StatsSection initialStats={stats} />
             <Logos />
             <CallToAction />
             <Footer />

@@ -3,33 +3,38 @@
 import { ScrollTextEffect, ScrollAppear } from '@/src/components/motion';
 import { Card, CardContent } from '@/src/components/ui/card';
 import { Badge } from '@/src/components/ui/badge';
-import { Activity, MapPin, Building2, Users } from 'lucide-react';
+import { Activity, MapPin, Building2 } from 'lucide-react';
+import { HomepageStatsData } from '@/src/services/stats.service';
 
-const statsData = [
-    {
-        value: '12,400+',
-        label: 'Hazards Mapped',
-        subtext: 'Citizen reports captured & verified',
-        icon: MapPin,
-        iconColor: 'text-red-500',
-    },
-    {
-        value: '89.4%',
-        label: 'Resolution Rate',
-        subtext: 'Fixed by municipal repair teams',
-        icon: Activity,
-        iconColor: 'text-emerald-500',
-    },
-    {
-        value: '35+',
-        label: 'Municipal Jurisdictions',
-        subtext: 'PostGIS boundary mapped councils',
-        icon: Building2,
-        iconColor: 'text-blue-500',
-    },
-];
+interface StatsSectionProps {
+    initialStats?: HomepageStatsData;
+}
 
-export default function StatsSection() {
+export default function StatsSection({ initialStats }: StatsSectionProps) {
+    const statsData = [
+        {
+            value: initialStats?.hazardsMapped ?? '12,400+',
+            label: 'Hazards Mapped',
+            subtext: 'Citizen reports captured & verified',
+            icon: MapPin,
+            iconColor: 'text-red-500',
+        },
+        {
+            value: initialStats?.resolutionRate ?? '89.4%',
+            label: 'Resolution Rate',
+            subtext: 'Fixed by municipal repair teams',
+            icon: Activity,
+            iconColor: 'text-emerald-500',
+        },
+        {
+            value: initialStats?.jurisdictions ?? '35+',
+            label: 'Municipal Jurisdictions',
+            subtext: 'PostGIS boundary mapped councils',
+            icon: Building2,
+            iconColor: 'text-blue-500',
+        },
+    ];
+
     return (
         <section className="py-16 md:py-24 bg-muted/20 border-t border-border/40" id="stats">
             <div className="mx-auto max-w-6xl px-6 space-y-12">
