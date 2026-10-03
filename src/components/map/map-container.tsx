@@ -113,14 +113,19 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
     const markersRef = useRef<Marker[]>([]);
     const draggableMarkerRef = useRef<Marker | null>(null);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const { resolvedTheme } = useTheme();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
 
     // Determine appropriate style based on theme and mode
     const activeStyle = mapMode === 'satellite'
         ? MAP_STYLES.satellite
-        : resolvedTheme === 'dark'
+        : (mounted && resolvedTheme === 'dark')
         ? MAP_STYLES.dark
         : MAP_STYLES.light;
 
@@ -562,7 +567,7 @@ export const MapContainer = forwardRef<MapContainerRef, MapContainerProps>(funct
                 ref={mapContainerRef}
                 className={cn(
                     'h-full w-full',
-                    resolvedTheme === 'dark' && mapMode !== 'satellite' && '[&_.maplibregl-canvas]:invert-[90%] [&_.maplibregl-canvas]:hue-rotate-180 [&_.maplibregl-canvas]:brightness-90 [&_.maplibregl-canvas]:contrast-115'
+                    mounted && resolvedTheme === 'dark' && mapMode !== 'satellite' && '[&_.maplibregl-canvas]:invert-[90%] [&_.maplibregl-canvas]:hue-rotate-180 [&_.maplibregl-canvas]:brightness-90 [&_.maplibregl-canvas]:contrast-115'
                 )}
             />
         </div>
