@@ -88,7 +88,7 @@ export function MunicipalityHeader({
 
                         <NotificationBell className="size-8" />
                         <ThemeToggle />
-                        <DropdownMenuAvatar name={userName} imageUrl={userImage} />
+                        <DropdownMenuAvatar name={userName} imageUrl={userImage} role={userRole} />
                     </div>
                 </div>
             </div>

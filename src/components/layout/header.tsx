@@ -119,6 +119,7 @@ export const HeroHeader = ({ initialSession }: HeroHeaderProps) => {
                                 <DropdownMenuAvatar
                                     imageUrl={currentSession.user.image}
                                     name={currentSession.user.name}
+                                    role={(currentSession.user as any).role}
                                 />
                             ) : (
                                 <div className="hidden items-center gap-2 sm:flex">

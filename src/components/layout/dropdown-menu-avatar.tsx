@@ -20,8 +20,9 @@ import {
     BellIcon,
     LogOutIcon,
     Building2,
+    ShieldCheck,
 } from 'lucide-react';
-import { signOut } from '@/src/lib/auth-client';
+import { signOut, useSession } from '@/src/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -30,15 +31,23 @@ import { NotificationSheet } from '@/src/components/notifications/notification-s
 interface DropdownMenuAvatarProps {
     imageUrl?: string | null;
     name?: string;
+    role?: string | null;
 }
 
 export function DropdownMenuAvatar({
     imageUrl,
     name,
+    role,
 }: DropdownMenuAvatarProps) {
     const router = useRouter();
+    const { data: session } = useSession();
     const [imgLoaded, setImgLoaded] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+
+    const effectiveRole = role ?? (session?.user as any)?.role;
+    const normalizedRole = typeof effectiveRole === 'string' ? effectiveRole.toUpperCase() : undefined;
+    const isSuperAdmin = normalizedRole === 'ADMIN';
+    const isMunicipalStaff = isSuperAdmin || normalizedRole === 'OFFICER' || normalizedRole === 'MANAGER';
 
     const handleClick = async () => {
         await signOut({
@@ -101,15 +110,29 @@ export function DropdownMenuAvatar({
                         </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild>
-                        <Link
-                            href="/municipality/dashboard"
-                            className="flex items-center gap-2"
-                        >
-                            <Building2 className="size-4 text-blue-600 dark:text-blue-400" />
-                            <span>Municipality Portal</span>
-                        </Link>
-                    </DropdownMenuItem>
+                    {isSuperAdmin && (
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/admin/dashboard"
+                                className="flex items-center gap-2"
+                            >
+                                <ShieldCheck className="size-4 text-amber-500" />
+                                <span>Super Admin Portal</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    )}
+
+                    {isMunicipalStaff && (
+                        <DropdownMenuItem asChild>
+                            <Link
+                                href="/municipality/dashboard"
+                                className="flex items-center gap-2"
+                            >
+                                <Building2 className="size-4 text-blue-600 dark:text-blue-400" />
+                                <span>Municipality Portal</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    )}
 
                     <DropdownMenuItem asChild>
                         <Link
