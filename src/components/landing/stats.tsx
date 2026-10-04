@@ -13,21 +13,21 @@ interface StatsSectionProps {
 export default function StatsSection({ initialStats }: StatsSectionProps) {
     const statsData = [
         {
-            value: initialStats?.hazardsMapped ?? '12,400+',
+            value: initialStats?.hazardsMapped ?? '0',
             label: 'Hazards Mapped',
             subtext: 'Citizen reports captured & verified',
             icon: MapPin,
             iconColor: 'text-red-500',
         },
         {
-            value: initialStats?.resolutionRate ?? '89.4%',
+            value: initialStats?.resolutionRate ?? '0.0%',
             label: 'Resolution Rate',
             subtext: 'Fixed by municipal repair teams',
             icon: Activity,
             iconColor: 'text-emerald-500',
         },
         {
-            value: initialStats?.jurisdictions ?? '35+',
+            value: initialStats?.jurisdictions ?? '0',
             label: 'Municipal Jurisdictions',
             subtext: 'PostGIS boundary mapped councils',
             icon: Building2,

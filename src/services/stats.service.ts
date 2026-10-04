@@ -14,18 +14,18 @@ export interface HomepageStatsData {
 }
 
 const DEFAULT_FALLBACK_STATS: HomepageStatsData = {
-    hazardsMapped: '12,400+',
-    resolutionRate: '89.4%',
-    jurisdictions: '35+',
+    hazardsMapped: '0',
+    resolutionRate: '0.0%',
+    jurisdictions: '0',
     rawCount: {
-        total: 12400,
-        resolved: 11085,
-        jurisdictions: 35,
+        total: 0,
+        resolved: 0,
+        jurisdictions: 0,
     },
 };
 
 export async function getHomepageStats(): Promise<HomepageStatsData> {
-    const cacheKey = 'stats:homepage:v2';
+    const cacheKey = 'stats:homepage:v3';
     const TTL_FIFTEEN_MINUTES = 900; // 15 minutes TTL
 
     try {
@@ -40,10 +40,10 @@ export async function getHomepageStats(): Promise<HomepageStatsData> {
                 db.municipality.count(),
             ]);
 
-            const rateNum = totalPotholes > 0 ? (resolvedPotholes / totalPotholes) * 100 : 89.4;
+            const rateNum = totalPotholes > 0 ? (resolvedPotholes / totalPotholes) * 100 : 0;
             const resolutionRate = `${rateNum.toFixed(1)}%`;
-            const hazardsMapped = totalPotholes > 0 ? `${totalPotholes.toLocaleString()}+` : '12,400+';
-            const jurisdictions = totalJurisdictions > 0 ? `${totalJurisdictions}+` : '35+';
+            const hazardsMapped = totalPotholes > 0 ? `${totalPotholes.toLocaleString()}+` : '0';
+            const jurisdictions = totalJurisdictions > 0 ? `${totalJurisdictions}+` : '0';
 
             return {
                 hazardsMapped,
