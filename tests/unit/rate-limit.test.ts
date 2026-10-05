@@ -3,6 +3,14 @@ import { rateLimit } from '../../src/lib/rate-limit';
 export async function runRateLimitUnitTests() {
     console.log('--- [UNIT TEST] Sliding Window Rate Limiter ---');
 
+    try {
+        const { getRedisConnection } = await import('../../src/lib/redis');
+        const redis = getRedisConnection();
+        if (redis && redis.status !== 'ready') {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+    } catch {}
+
     const testId = `unit-test-ip-${Date.now()}`;
 
     // 1. Initial request under limit

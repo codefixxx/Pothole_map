@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { runStateMachineUnitTests } from './unit/state-machine.test';
 import { runRateLimitUnitTests } from './unit/rate-limit.test';
 import { runValidationsUnitTests } from './unit/validations.test';
