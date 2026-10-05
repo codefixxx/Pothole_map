@@ -52,28 +52,39 @@ export async function POST(req: NextRequest) {
             </div>
         `;
 
-        const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.NODEMAILER_USER || 'PotholeMap <onboarding@resend.dev>';
+        const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.NODEMAILER_USER || 'onboarding@resend.dev';
+        let emailSent = false;
+
         if (process.env.RESEND_API_KEY || (process.env.NODEMAILER_USER && process.env.NODEMAILER_APP_PASSWORD)) {
-            await transporter.sendMail({
-                from: `"${name} via PotholeMap" <${fromEmail.includes('<') ? fromEmail.split('<')[1].replace('>', '') : fromEmail}>`,
-                replyTo: email,
-                to: destinationEmail,
-                subject: emailSubject,
-                html: emailHtml,
-            });
-        } else {
-            console.log('[Contact API] Mock email sent to:', destinationEmail, {
+            try {
+                const senderAddress = fromEmail.includes('<') ? fromEmail.split('<')[1].replace('>', '') : fromEmail;
+                await transporter.sendMail({
+                    from: `"PotholeMap Support" <${senderAddress}>`,
+                    replyTo: email,
+                    to: destinationEmail,
+                    subject: emailSubject,
+                    html: emailHtml,
+                });
+                emailSent = true;
+            } catch (emailErr) {
+                console.warn('[Contact API Email Warning]: Could not send external email:', emailErr);
+            }
+        }
+        
+        if (!emailSent) {
+            console.log('[Contact API] Support request logged:', {
                 name,
                 email,
                 type,
                 subject,
                 message,
+                destinationEmail,
             });
         }
 
         return NextResponse.json({
             success: true,
-            message: 'Your message has been sent successfully. Our team will review it and get back to you soon!',
+            message: 'Your message has been submitted successfully. Our team will review your inquiry shortly!',
         });
     } catch (error: any) {
         console.error('[Contact API Error]:', error);
