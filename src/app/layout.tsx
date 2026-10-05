@@ -79,7 +79,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
             suppressHydrationWarning
             className="scroll-smooth no-scrollbar"
         >
-            <head>
+            <head />
+            <body className="min-h-screen bg-background font-sans antialiased">
                 {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
                     <Script
                         async
@@ -88,8 +89,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         strategy="afterInteractive"
                     />
                 )}
-            </head>
-            <body className="min-h-screen bg-background font-sans antialiased">
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
