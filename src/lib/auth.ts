@@ -24,7 +24,7 @@ export function getBaseUrl(): string {
 
 export const auth = betterAuth({
     baseURL: getBaseUrl(),
-    secret: process.env.BETTER_AUTH_SECRET,
+    secret: process.env.BETTER_AUTH_SECRET || (process.env.NODE_ENV === 'production' ? 'pothole_map_default_prod_secret_32chars_long' : 'dev_secret_key_1234567890'),
     database: prismaAdapter(db, {
         provider: 'postgresql',
     }),
