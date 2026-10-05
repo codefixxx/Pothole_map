@@ -1,4 +1,3 @@
-import "dotenv/config";
 import "./env";
 
 import { PrismaClient } from "@prisma/client";
@@ -41,9 +40,9 @@ const isCloudDb = connectionString?.includes("neon.tech") || connectionString?.i
 
 const pool = new Pool({
   connectionString,
-  max: parseInt(process.env.DB_POOL_MAX || "20", 10),
+  max: parseInt(process.env.DB_POOL_MAX || "10", 10),
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
+  connectionTimeoutMillis: 10000,
   ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
 });
 
@@ -59,4 +58,5 @@ export const db =
 if (process.env.NODE_ENV !== "production") {
   global.prisma = db;
 }
+
 

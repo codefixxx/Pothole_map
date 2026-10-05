@@ -6,8 +6,25 @@ import { createAuthMiddleware, APIError } from 'better-auth/api';
 import { getValidDomains, normalizeName } from './utils';
 import { sendEmail } from './nodemailer';
 
+export function getBaseUrl(): string {
+    if (process.env.BETTER_AUTH_BASE_URL) {
+        return process.env.BETTER_AUTH_BASE_URL;
+    }
+    if (process.env.NEXT_PUBLIC_APP_URL) {
+        return process.env.NEXT_PUBLIC_APP_URL;
+    }
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    }
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
+    }
+    return 'http://localhost:3000';
+}
+
 export const auth = betterAuth({
-    baseURL: process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000',
+    baseURL: getBaseUrl(),
+    secret: process.env.BETTER_AUTH_SECRET,
     database: prismaAdapter(db, {
         provider: 'postgresql',
     }),
@@ -18,7 +35,7 @@ export const auth = betterAuth({
         requireEmailVerification: true,
         resetPasswordTokenExpiresIn: 60 * 60,
         sendResetPassword: async ({ user, url }) => {
-            const baseUrl = process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000';
+            const baseUrl = getBaseUrl();
             let targetPath = url;
             if (targetPath.startsWith('/reset-password')) {
                 targetPath = `/auth${targetPath}`;
@@ -41,7 +58,7 @@ export const auth = betterAuth({
         expiresIn: 60 * 60 * 24, // 24 hours
         autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
-            const baseUrl = process.env.BETTER_AUTH_BASE_URL || 'http://localhost:3000';
+            const baseUrl = getBaseUrl();
             let targetPath = url;
             if (targetPath.startsWith('/verify-email')) {
                 targetPath = `/api/auth${targetPath}`;
@@ -108,3 +125,4 @@ export const auth = betterAuth({
     },
     plugins: [nextCookies()],
 });
+
