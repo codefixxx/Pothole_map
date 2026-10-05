@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import { getRedisConnection } from './redis';
 
 const memoryRateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -40,41 +39,7 @@ export function getClientIp(req: NextRequest): string {
     return '127.0.0.1';
 }
 
-/**
- * Sliding window rate-limiter supporting Redis with in-memory Map fallback.
- * @param identifier IP address, user ID, or client key
- * @param limit Maximum number of requests allowed in window
- * @param windowSeconds Window duration in seconds
- */
-export async function rateLimit(
-    identifier: string,
-    limit = 60,
-    windowSeconds = 60
-): Promise<RateLimitResult> {
-    const key = `ratelimit:${identifier}`;
-    const now = Date.now();
-    const redis = getRedisConnection();
-
-    if (redis.status === 'ready') {
-        try {
-            const current = await redis.incr(key);
-            if (current === 1) {
-                await redis.expire(key, windowSeconds);
-            }
-            const ttl = await redis.ttl(key);
-
-            return {
-                success: current <= limit,
-                limit,
-                remaining: Math.max(0, limit - current),
-                resetInSeconds: Math.max(0, ttl),
-            };
-        } catch {
-            // Fall through to memory store fallback
-        }
-    }
-
-    // In-memory fallback
+function memoryRateLimit(key: string, limit: number, windowSeconds: number, now: number): RateLimitResult {
     const entry = memoryRateLimitStore.get(key);
     if (!entry || entry.resetAt <= now) {
         memoryRateLimitStore.set(key, {
@@ -100,3 +65,46 @@ export async function rateLimit(
         resetInSeconds,
     };
 }
+
+/**
+ * Sliding window rate-limiter supporting Redis with in-memory Map fallback.
+ * Safe for Edge / Middleware execution.
+ */
+export async function rateLimit(
+    identifier: string,
+    limit = 60,
+    windowSeconds = 60
+): Promise<RateLimitResult> {
+    const key = `ratelimit:${identifier}`;
+    const now = Date.now();
+
+    // In Edge / Middleware environment, use fast in-memory rate limiting store to avoid ioredis edge crashes
+    if (process.env.NEXT_RUNTIME === 'edge' || typeof process.versions?.node === 'undefined') {
+        return memoryRateLimit(key, limit, windowSeconds, now);
+    }
+
+    try {
+        const { getRedisConnection } = await import('./redis');
+        const redis = getRedisConnection();
+
+        if (redis && redis.status === 'ready') {
+            const current = await redis.incr(key);
+            if (current === 1) {
+                await redis.expire(key, windowSeconds);
+            }
+            const ttl = await redis.ttl(key);
+
+            return {
+                success: current <= limit,
+                limit,
+                remaining: Math.max(0, limit - current),
+                resetInSeconds: Math.max(0, ttl),
+            };
+        }
+    } catch {
+        // Fall through to memory store fallback if Redis import or connection fails
+    }
+
+    return memoryRateLimit(key, limit, windowSeconds, now);
+}
+
