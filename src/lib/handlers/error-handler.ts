@@ -63,8 +63,7 @@ export function handleError(error: unknown): Response {
         return Response.json(
             {
                 success: false,
-                message: 'Internal Server Error',
-
+                message: error.message || 'Internal Server Error',
                 ...(APP_DEBUG && {
                     stack: error.stack,
                     error: error.message,
