@@ -25,7 +25,7 @@ import {
 import { signOut, useSession } from '@/src/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NotificationSheet } from '@/src/components/notifications/notification-sheet';
 
 interface DropdownMenuAvatarProps {
@@ -43,11 +43,37 @@ export function DropdownMenuAvatar({
     const { data: session } = useSession();
     const [imgLoaded, setImgLoaded] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [memberState, setMemberState] = useState<{ isMember: boolean; role?: string | null }>({
+        isMember: false,
+    });
 
     const effectiveRole = role ?? (session?.user as any)?.role;
     const normalizedRole = typeof effectiveRole === 'string' ? effectiveRole.toUpperCase() : undefined;
     const isSuperAdmin = normalizedRole === 'ADMIN';
-    const isMunicipalStaff = isSuperAdmin || normalizedRole === 'OFFICER' || normalizedRole === 'MANAGER';
+
+    useEffect(() => {
+        if (!session?.user || isSuperAdmin) return;
+
+        let isMounted = true;
+        fetch('/api/user/membership')
+            .then((res) => res.json())
+            .then((data) => {
+                if (isMounted && data?.isMember) {
+                    setMemberState({ isMember: true, role: data.role });
+                }
+            })
+            .catch(() => {});
+
+        return () => {
+            isMounted = false;
+        };
+    }, [session?.user, isSuperAdmin]);
+
+    const isMunicipalStaff =
+        isSuperAdmin ||
+        memberState.isMember ||
+        normalizedRole === 'OFFICER' ||
+        normalizedRole === 'MANAGER';
 
     const handleClick = async () => {
         await signOut({
