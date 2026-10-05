@@ -1,4 +1,5 @@
 import { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { ThemeProvider } from '@/src/components/layout';
 import './globals.css';
 import { Toaster } from '@/src/components/ui/sonner';
@@ -78,7 +79,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
             suppressHydrationWarning
             className="scroll-smooth no-scrollbar"
         >
-            <head />
+            <head>
+                {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+                    <Script
+                        async
+                        src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL || 'https://cloud.umami.is/script.js'}
+                        data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+                        strategy="afterInteractive"
+                    />
+                )}
+            </head>
             <body className="min-h-screen bg-background font-sans antialiased">
                 <ThemeProvider
                     attribute="class"
