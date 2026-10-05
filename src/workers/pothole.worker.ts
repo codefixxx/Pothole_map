@@ -115,5 +115,15 @@ potholeWorker.on('failed', async (job, err) => {
     }
 });
 
+import http from 'http';
+
+const PORT = process.env.PORT || 10000;
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', worker: 'pothole-worker' }));
+}).listen(PORT, () => {
+    console.log(`[Worker] Health check HTTP server listening on port ${PORT}`);
+});
+
 console.log('[Worker] Pothole worker is running with retry backoff & DLQ protection...');
 
