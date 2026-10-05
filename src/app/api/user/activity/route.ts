@@ -84,11 +84,11 @@ export const GET = asyncHandler(async (req: Request) => {
 
     const formattedMyReports = myReports.map(formatPothole);
     const formattedUpvoted = userVotes
-        .filter((v) => v.pothole)
-        .map((v) => formatPothole(v.pothole));
+        .filter((v: any) => v.pothole)
+        .map((v: any) => formatPothole(v.pothole));
     const formattedFollowed = userFollows
-        .filter((f) => f.pothole)
-        .map((f) => formatPothole(f.pothole));
+        .filter((f: any) => f.pothole)
+        .map((f: any) => formatPothole(f.pothole));
 
     return Response.json({
         success: true,

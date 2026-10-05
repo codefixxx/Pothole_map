@@ -100,7 +100,7 @@ export const GET = asyncHandler(async (req: Request) => {
         },
     });
 
-    const formattedOfficers = officers.map((m) => ({
+    const formattedOfficers = officers.map((m: any) => ({
         id: m.userId,
         name: m.user.name || m.user.email,
         role: m.role,

@@ -92,7 +92,7 @@ export const GET = asyncHandler(async (req: Request) => {
         } catch {}
     }
 
-    const result = municipalities.map((m) => ({
+    const result = municipalities.map((m: any) => ({
         id: m.id,
         name: m.name,
         createdAt: m.createdAt,

@@ -44,7 +44,7 @@ export const GET = asyncHandler(async (req: Request) => {
     );
 
     // Format results with computed fields
-    const formatted = candidates.map((cand) => {
+    const formatted = candidates.map((cand: any) => {
         const primary = cand.pothole;
         const duplicate = cand.duplicate;
         return {
