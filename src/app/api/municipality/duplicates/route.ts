@@ -4,7 +4,7 @@ import { AppError } from '@/src/lib/errors';
 import { headers } from 'next/headers';
 import { getMunicipalityMember } from '@/src/lib/auth-helpers';
 import * as duplicateService from '@/src/services/duplicate.service';
-import { DuplicateStatus } from '@prisma/client';
+import { DuplicateStatus } from '@/src/types/enums';
 
 export const GET = asyncHandler(async (req: Request) => {
     const session = await auth.api.getSession({ headers: await headers() });

@@ -6,7 +6,7 @@ import { getMunicipalityMember } from '@/src/lib/auth-helpers';
 import * as jurisdictionRepo from '@/src/repositories/jurisdiction.repository';
 import * as potholeService from '@/src/services/pothole.service';
 import { db } from '@/src/lib/db';
-import { Status } from '@prisma/client';
+import { Status } from '@/src/types/enums';
 
 export const GET = asyncHandler(async (req: Request) => {
     const session = await auth.api.getSession({ headers: await headers() });

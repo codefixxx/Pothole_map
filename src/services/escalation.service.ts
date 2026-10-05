@@ -1,5 +1,5 @@
 import { db } from '@/src/lib/db';
-import { Status, MunicipalityRole } from '@prisma/client';
+import { Status, MunicipalityRole } from '@/src/types/enums';
 import { createNotification } from './notification.service';
 import { sendEmail } from '@/src/lib/nodemailer';
 

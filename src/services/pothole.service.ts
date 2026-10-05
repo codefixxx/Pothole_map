@@ -1,6 +1,6 @@
 import * as potholeRepo from '@/src/repositories/pothole.repository';
 import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
-import { Status } from '@prisma/client';
+import { Status } from '@/src/types/enums';
 import { sendVerificationNotification, sendFixedNotification, sendRejectedNotification, sendOngoingNotification, notifyOfficerAssignment, notifyFollowersOfStatusChange } from './notification.service';
 import { AppError } from '../lib/errors';
 import { findJurisdictionForCoordinates, authorizeReportAction } from '@/src/lib/auth-helpers';

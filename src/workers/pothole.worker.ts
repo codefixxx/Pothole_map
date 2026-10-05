@@ -5,7 +5,7 @@ import { POTHOLE_QUEUE_NAME, sendToDeadLetterQueue } from '../lib/queue';
 import { linkDuplicateCandidates } from '../services/duplicate.service';
 import { generateImageEmbedding } from '../services/embedding.service';
 import { notifyCityAdmin, notifyNearbyDrivers, notifyNewPotholeReport } from '../services/notification.service';
-import { ImageProcessingState } from '@prisma/client';
+import { ImageProcessingState } from '../types/enums';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

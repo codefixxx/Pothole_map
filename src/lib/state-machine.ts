@@ -1,4 +1,4 @@
-import { Status, MunicipalityRole } from '@prisma/client';
+import { Status, MunicipalityRole } from '@/src/types/enums';
 import { AppError } from './errors';
 
 // Type definitions for validation context

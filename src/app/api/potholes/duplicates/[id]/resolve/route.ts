@@ -3,7 +3,7 @@ import { asyncHandler } from '@/src/lib/handlers/async-handler';
 import { AppError } from '@/src/lib/errors';
 import { headers } from 'next/headers';
 import * as duplicateService from '@/src/services/duplicate.service';
-import { DuplicateStatus } from '@prisma/client';
+import { DuplicateStatus } from '@/src/types/enums';
 
 export const POST = asyncHandler(async (
     req: Request,

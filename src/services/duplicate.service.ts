@@ -1,6 +1,7 @@
 import * as duplicateRepository from '@/src/repositories/duplicate.repository';
 import { db } from '@/src/lib/db';
-import { DuplicateStatus, Status, DuplicateCandidate } from '@prisma/client';
+import type { DuplicateCandidate } from '@prisma/client';
+import { DuplicateStatus, Status } from '@/src/types/enums';
 import { AppError } from '@/src/lib/errors';
 
 export interface PotentialDuplicateWithScore {

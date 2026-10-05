@@ -1,6 +1,6 @@
 import { db } from '@/src/lib/db';
 import { getCachedOrFetch } from '@/src/lib/cache';
-import { Status } from '@prisma/client';
+import { Status } from '@/src/types/enums';
 
 export interface HomepageStatsData {
     hazardsMapped: string;

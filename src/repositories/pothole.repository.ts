@@ -22,7 +22,7 @@
 
 import { db } from '@/src/lib/db';
 
-import { Status } from '@prisma/client';
+import { Status } from '@/src/types/enums';
 
 import { CreatePotholeInput } from '@/src/lib/validations/pothole.schema';
 

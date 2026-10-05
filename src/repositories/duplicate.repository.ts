@@ -1,5 +1,6 @@
 import { db } from '@/src/lib/db';
-import { DuplicateStatus, Status, DuplicateCandidate } from '@prisma/client';
+import type { DuplicateCandidate } from '@prisma/client';
+import { DuplicateStatus, Status } from '@/src/types/enums';
 
 export interface PotentialDuplicateRaw {
     id: string;

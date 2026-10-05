@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Status } from '@prisma/client';
+import { Status } from '@/src/types/enums';
 import { Badge } from '@/src/components/ui/badge';
 import {
     Clock,
