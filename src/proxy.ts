@@ -9,6 +9,10 @@ const protectedRoutes = [
     '/municipality/dashboard',
 ];
 
+export async function middleware(req: NextRequest) {
+    return proxy(req);
+}
+
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
     const method = req.method;
