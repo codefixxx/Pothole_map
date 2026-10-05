@@ -25,6 +25,11 @@ export function cleanRedisUrl(url: string | undefined): string {
         return 'redis://127.0.0.1:6379';
     }
 
+    // Upstash Cloud requires rediss:// TLS scheme
+    if (cleaned.includes('upstash.io') && cleaned.startsWith('redis://')) {
+        cleaned = cleaned.replace('redis://', 'rediss://');
+    }
+
     try {
         new URL(cleaned);
         return cleaned;
