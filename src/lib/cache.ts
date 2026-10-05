@@ -11,42 +11,43 @@ export async function getCachedOrFetch<T>(
     ttlSeconds: number,
     fetcher: () => Promise<T>
 ): Promise<T> {
-    const redis = getRedisConnection();
-
-    if (redis.status === 'ready') {
-        try {
+    // 1. Try Redis cache
+    try {
+        const redis = getRedisConnection();
+        if (redis && redis.status === 'ready') {
             const cached = await redis.get(key);
             if (cached) {
                 return JSON.parse(cached) as T;
             }
-        } catch {
-            // Fall through to memory cache
         }
-    } else {
-        const entry = memoryCache.get(key);
-        if (entry && entry.expiresAt > Date.now()) {
-            return entry.value as T;
-        }
+    } catch {
+        // Fall through
     }
 
-    // Cache miss: execute fetcher
+    // 2. Try Memory cache fallback
+    const entry = memoryCache.get(key);
+    if (entry && entry.expiresAt > Date.now()) {
+        return entry.value as T;
+    }
+
+    // 3. Cache miss: execute database fetcher
     const freshData = await fetcher();
 
-    if (redis.status === 'ready') {
-        try {
+    // 4. Update cache
+    try {
+        const redis = getRedisConnection();
+        if (redis && redis.status === 'ready') {
             await redis.setex(key, ttlSeconds, JSON.stringify(freshData));
-        } catch {
-            memoryCache.set(key, {
-                value: freshData,
-                expiresAt: Date.now() + ttlSeconds * 1000,
-            });
+            return freshData;
         }
-    } else {
-        memoryCache.set(key, {
-            value: freshData,
-            expiresAt: Date.now() + ttlSeconds * 1000,
-        });
+    } catch {
+        // Fall through to memory store
     }
+
+    memoryCache.set(key, {
+        value: freshData,
+        expiresAt: Date.now() + ttlSeconds * 1000,
+    });
 
     return freshData;
 }
@@ -59,9 +60,9 @@ export async function invalidateCacheKeys(keys: string[]) {
         memoryCache.delete(key);
     }
 
-    const redis = getRedisConnection();
-    if (redis.status === 'ready') {
-        try {
+    try {
+        const redis = getRedisConnection();
+        if (redis && redis.status === 'ready') {
             for (const key of keys) {
                 if (key.includes('*')) {
                     const matchingKeys = await redis.keys(key);
@@ -72,8 +73,9 @@ export async function invalidateCacheKeys(keys: string[]) {
                     await redis.del(key);
                 }
             }
-        } catch {
-            // Silent catch for Redis fallback
         }
+    } catch {
+        // Silent catch for Redis fallback
     }
 }
+
