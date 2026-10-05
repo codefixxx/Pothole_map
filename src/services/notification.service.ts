@@ -1,7 +1,6 @@
 import { sendEmail } from '@/src/lib/nodemailer';
 import * as userRepo from '@/src/repositories/user.repository';
 import { db } from '@/src/lib/db';
-import { Role } from '@prisma/client';
 
 export async function createNotification(params: {
     userId: string;
@@ -165,7 +164,7 @@ export async function notifyNewPotholeReport(municipalityId: string | null, poth
     } else {
         // Notify all platform admins
         const admins = await db.user.findMany({
-            where: { role: Role.ADMIN },
+            where: { role: 'ADMIN' },
         });
 
         for (const admin of admins) {

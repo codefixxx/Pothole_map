@@ -1,5 +1,5 @@
 import { db } from '@/src/lib/db';
-import { Status, Role, MunicipalityRole } from '@prisma/client';
+import { Status, MunicipalityRole } from '@prisma/client';
 import { createNotification } from './notification.service';
 import { sendEmail } from '@/src/lib/nodemailer';
 
@@ -77,7 +77,7 @@ export async function escalateStaleReports(thresholdHours = 48): Promise<number>
         } else {
             // Unassigned: Find all platform admins
             const admins = await db.user.findMany({
-                where: { role: Role.ADMIN },
+                where: { role: 'ADMIN' },
             });
 
             for (const admin of admins) {

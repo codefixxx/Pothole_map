@@ -2,7 +2,6 @@ import { auth } from '@/src/lib/auth';
 import { asyncHandler } from '@/src/lib/handlers/async-handler';
 import { AppError } from '@/src/lib/errors';
 import { headers } from 'next/headers';
-import { Role } from '@prisma/client';
 import { escalateStaleReports } from '@/src/services/escalation.service';
 
 export const POST = asyncHandler(async (req: Request) => {
@@ -11,7 +10,7 @@ export const POST = asyncHandler(async (req: Request) => {
         throw new AppError('Unauthorized', 401);
     }
 
-    if (session.user.role !== Role.ADMIN) {
+    if (session.user.role !== 'ADMIN') {
         throw new AppError('Forbidden: Only platform administrators can trigger escalation checks.', 403);
     }
 
