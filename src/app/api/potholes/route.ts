@@ -6,30 +6,18 @@ import { createPotholeSchema } from '@/src/lib/validations/pothole.schema';
 import * as potholeService from '@/src/services/pothole.service';
 
 export const GET = asyncHandler(async (req: Request) => {
-    try {
-        const { searchParams } = new URL(req.url);
-        const limitParam = searchParams.get('limit');
-        const pageParam = searchParams.get('page');
-        const limit = limitParam ? parseInt(limitParam, 10) : 500;
-        const page = pageParam ? parseInt(pageParam, 10) : 1;
+    const { searchParams } = new URL(req.url);
+    const limitParam = searchParams.get('limit');
+    const pageParam = searchParams.get('page');
+    const limit = limitParam ? parseInt(limitParam, 10) : 500;
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
 
-        const potholes = await potholeService.getAllPotholes(page, limit);
+    const potholes = await potholeService.getAllPotholes(page, limit);
 
-        return Response.json({
-            success: true,
-            data: potholes,
-        });
-    } catch (err: any) {
-        console.error('[GET /api/potholes Error]:', err);
-        return Response.json(
-            {
-                success: false,
-                error: err?.message || String(err),
-                stack: err?.stack,
-            },
-            { status: 500 }
-        );
-    }
+    return Response.json({
+        success: true,
+        data: potholes,
+    });
 });
 
 export const POST = asyncHandler(async (req: Request) => {
