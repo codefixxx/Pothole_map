@@ -13,10 +13,16 @@ export function cleanRedisUrl(url: string | undefined): string {
     if (!url) return 'redis://127.0.0.1:6379';
     let cleaned = url.trim().replace(/^['"]|['"]$/g, '');
     
-    // Extract actual redis:// or rediss:// URL if prefixed by CLI command string like "redis-cli --tls -u redis://..."
-    const match = cleaned.match(/(rediss?:\/\/[^\s'"]+)/i);
-    if (match) {
-        cleaned = match[1];
+    // Extract all redis:// or rediss:// occurrences
+    const matches = cleaned.match(/(rediss?:\/\/[^\s'"]+)/gi);
+    if (matches && matches.length > 0) {
+        // Find the actual connection string containing credentials (@) or domain (.io, :6379)
+        const validMatch = matches.reverse().find((m) => m.includes('@') || m.includes('.io') || m.includes(':6379'));
+        cleaned = validMatch || matches[0];
+    }
+
+    if (cleaned.includes('redis-cli')) {
+        return 'redis://127.0.0.1:6379';
     }
 
     try {
