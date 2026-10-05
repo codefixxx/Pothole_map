@@ -35,7 +35,7 @@ export default function PotholeDetailPage({
         if (nextParams?.id) {
             setPotholeId(nextParams.id as string);
         } else if (paramsProp) {
-            Promise.resolve(paramsProp).then((p) => {
+            Promise.resolve(paramsProp).then((p: any) => {
                 if (p?.id) setPotholeId(p.id);
             });
         }

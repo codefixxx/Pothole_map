@@ -37,7 +37,7 @@ export const GET = asyncHandler(async (req: Request) => {
         db.user.count(),
         db.municipalityMember.count(),
         db.$queryRaw<{ count: bigint }[]>`SELECT COUNT(*) as count FROM "jurisdiction"`.then(
-            (r) => Number(r[0]?.count || 0)
+            (r: any) => Number(r[0]?.count || 0)
         ).catch(() => 0),
     ]);
 
