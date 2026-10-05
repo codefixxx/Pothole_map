@@ -29,11 +29,12 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self';",
+      "manifest-src 'self';",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cloud.umami.is https://*.sentry.io;",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
       "img-src 'self' blob: data: https: utfs.io *.ufs.sh images.unsplash.com uploadthing.com lh3.googleusercontent.com avatars.githubusercontent.com;",
       "font-src 'self' data: https://fonts.gstatic.com;",
-      "connect-src 'self' https: wss: https://cloud.umami.is https://*.sentry.io https://*.ingest.sentry.io;",
+      "connect-src 'self' https: wss: https://cloud.umami.is https://*.sentry.io https://*.ingest.sentry.io https://vercel.com;",
       "frame-ancestors 'none';",
     ].join(" "),
   },
