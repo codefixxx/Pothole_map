@@ -68,8 +68,15 @@ export const GET = asyncHandler(async (req: Request) => {
         },
     });
 
+    interface RawJurisdiction {
+        id: string;
+        name: string;
+        boundary: string;
+        municipalityId: string;
+    }
+
     // Fetch jurisdictions via raw query to get GeoJSON strings parsed properly
-    const jurisdictions = await db.$queryRaw<any[]>`
+    const jurisdictions = await db.$queryRaw<RawJurisdiction[]>`
         SELECT "id", "name", ST_AsGeoJSON(boundary) as boundary, "municipalityId"
         FROM "jurisdiction"
     `;

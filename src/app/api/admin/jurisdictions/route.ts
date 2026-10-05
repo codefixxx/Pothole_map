@@ -43,14 +43,22 @@ export const GET = asyncHandler(async (req: Request) => {
 
     const { db } = await import('@/src/lib/db');
 
-    const results = await db.$queryRaw<any[]>`
+    interface JurisdictionRawRow {
+        id: string;
+        name: string;
+        municipalityId: string;
+        municipalityName: string | null;
+        boundary: string;
+    }
+
+    const results = await db.$queryRaw<JurisdictionRawRow[]>`
         SELECT j."id", j."name", ST_AsGeoJSON(j.boundary) as boundary, j."municipalityId", m."name" as "municipalityName"
         FROM "jurisdiction" j
         LEFT JOIN "municipality" m ON j."municipalityId" = m."id"
         ORDER BY j."name" ASC;
     `;
 
-    const jurisdictions = results.map((row) => ({
+    const jurisdictions = results.map((row: JurisdictionRawRow) => ({
         id: row.id,
         name: row.name,
         municipalityId: row.municipalityId,
