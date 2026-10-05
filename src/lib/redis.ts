@@ -15,10 +15,28 @@ export const getRedisConnection = () => {
     if (global.redisConnection) {
         return global.redisConnection;
     }
-    const conn = new Redis(redisUrl, redisConnectionOptions);
+
+    const isTls = redisUrl.startsWith('rediss://');
+    const options: RedisOptions = {
+        ...redisConnectionOptions,
+        tls: isTls ? { rejectUnauthorized: false } : undefined,
+        keepAlive: 10000,
+        enableOfflineQueue: true,
+        retryStrategy(times) {
+            const delay = Math.min(times * 200, 2000);
+            return delay;
+        },
+    };
+
+    const conn = new Redis(redisUrl, options);
     conn.on('error', (err) => {
-        // Silently catch Redis errors in environments where Redis server is not running
+        // Silently handle expected connection reset errors from serverless Upstash Redis
+        if (err.message && (err.message.includes('ECONNRESET') || err.message.includes('ETIMEDOUT'))) {
+            return;
+        }
+        console.warn('[Redis] Connection warning:', err.message);
     });
+
     if (process.env.NODE_ENV !== 'production') {
         global.redisConnection = conn;
     }

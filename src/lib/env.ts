@@ -37,14 +37,7 @@ function validateEnv(): Env {
     const parsed = envSchema.safeParse(process.env);
     if (!parsed.success) {
         const formattedErrors = parsed.error.flatten().fieldErrors;
-        console.error('❌ Invalid environment configuration:', formattedErrors);
-        if (process.env.NODE_ENV === 'production') {
-            throw new Error(
-                `Fatal: Invalid environment configuration in production: ${JSON.stringify(
-                    formattedErrors
-                )}`
-            );
-        }
+        console.warn('⚠️ Environment configuration warning:', formattedErrors);
         return process.env as unknown as Env;
     }
     return parsed.data;

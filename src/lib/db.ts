@@ -11,8 +11,8 @@ declare global {
 
 import dns from "dns";
 
-// DNS Fallback patch for local networks where system DNS fails to resolve *.neon.tech
-if (typeof window === "undefined") {
+// DNS Fallback patch for local development networks where system DNS fails to resolve *.neon.tech
+if (typeof window === "undefined" && process.env.NODE_ENV !== "production") {
   try {
     dns.setServers(["8.8.8.8", "1.1.1.1"]);
   } catch {}
@@ -37,15 +37,14 @@ if (typeof window === "undefined") {
 }
 
 const connectionString = process.env.DATABASE_URL;
+const isCloudDb = connectionString?.includes("neon.tech") || connectionString?.includes("supabase") || connectionString?.includes("ssl") || process.env.NODE_ENV === "production";
 
 const pool = new Pool({
   connectionString,
   max: parseInt(process.env.DB_POOL_MAX || "20", 10),
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 15000,
-  ssl: connectionString?.includes("ssl")
-    ? { rejectUnauthorized: false }
-    : undefined,
+  ssl: isCloudDb ? { rejectUnauthorized: false } : undefined,
 });
 
 const adapter = new PrismaPg(pool);
