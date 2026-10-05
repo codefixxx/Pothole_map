@@ -52,9 +52,10 @@ export async function POST(req: NextRequest) {
             </div>
         `;
 
-        if (process.env.NODEMAILER_USER && process.env.NODEMAILER_APP_PASSWORD) {
+        const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.NODEMAILER_USER || 'PotholeMap <onboarding@resend.dev>';
+        if (process.env.RESEND_API_KEY || (process.env.NODEMAILER_USER && process.env.NODEMAILER_APP_PASSWORD)) {
             await transporter.sendMail({
-                from: `"${name} via PotholeMap" <${process.env.NODEMAILER_USER}>`,
+                from: `"${name} via PotholeMap" <${fromEmail.includes('<') ? fromEmail.split('<')[1].replace('>', '') : fromEmail}>`,
                 replyTo: email,
                 to: destinationEmail,
                 subject: emailSubject,
