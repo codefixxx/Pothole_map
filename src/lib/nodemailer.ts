@@ -1,14 +1,26 @@
 import nodemailer from "nodemailer"
 
-export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.NODEMAILER_USER,
-    pass: process.env.NODEMAILER_APP_PASSWORD, // app password
-  },
-})
+export const transporter = nodemailer.createTransport(
+  process.env.RESEND_API_KEY
+    ? {
+        host: "smtp.resend.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: "resend",
+          pass: process.env.RESEND_API_KEY,
+        },
+      }
+    : {
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.NODEMAILER_USER,
+          pass: process.env.NODEMAILER_APP_PASSWORD,
+        },
+      }
+)
 
 type SendEmailParams = {
   to: string
@@ -75,8 +87,9 @@ export async function sendEmail({ to, subject, meta }: SendEmailParams) {
   `
 
   try {
+    const from = process.env.RESEND_FROM_EMAIL || process.env.NODEMAILER_USER || "PotholeMap <onboarding@resend.dev>"
     const info = await transporter.sendMail({
-      from: process.env.NODEMAILER_USER,
+      from,
       to,
       subject,
       html,
